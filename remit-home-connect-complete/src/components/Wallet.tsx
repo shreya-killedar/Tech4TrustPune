@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,11 +53,13 @@ function saveTransaction(userEmail: string, tx: any) {
 }
 
 const Wallet = ({ onNavigate }: WalletProps) => {
+  const location = useLocation();
+  const initialTab = location.state?.tab || 'transactions';
   const [showBalance, setShowBalance] = useState(true);
   const [addAmount, setAddAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [balance, setBalance] = useState(0);
-  const [tab, setTab] = useState('transactions');
+  const [tab, setTab] = useState(initialTab);
   const [transactions, setTransactions] = useState<any[]>([]);
   const { toast } = useToast();
   const user = getAuthUser();
@@ -235,16 +237,17 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Button 
-          onClick={() => onNavigate('send')} 
-          className="h-20 flex-col gap-2 bg-primary hover:bg-primary/90"
+          variant={tab === 'send' ? 'default' : 'outline'}
+          className={`h-20 flex-col gap-2 ${tab === 'send' ? 'bg-primary text-white border-primary' : ''}`}
+          onClick={() => navigate('/dashboard/send')}
         >
           <ArrowUpRight className="h-6 w-6" />
           <span>Send Money</span>
         </Button>
         
         <Button 
-          variant="outline" 
-          className="h-20 flex-col gap-2"
+          variant={tab === 'add-money' ? 'default' : 'outline'}
+          className={`h-20 flex-col gap-2 ${tab === 'add-money' ? 'bg-primary text-white border-primary' : ''}`}
           onClick={() => setTab('add-money')}
         >
           <Plus className="h-6 w-6" />
@@ -252,8 +255,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
         </Button>
         
         <Button 
-          variant="outline" 
-          className="h-20 flex-col gap-2"
+          variant={tab === 'withdraw' ? 'default' : 'outline'}
+          className={`h-20 flex-col gap-2 ${tab === 'withdraw' ? 'bg-primary text-white border-primary' : ''}`}
           onClick={() => setTab('withdraw')}
         >
           <ArrowDownLeft className="h-6 w-6" />

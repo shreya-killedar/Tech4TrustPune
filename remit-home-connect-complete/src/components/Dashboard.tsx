@@ -162,7 +162,7 @@ const Dashboard = () => {
             <Button 
               size="sm" 
               variant="secondary"
-              onClick={() => navigate('/dashboard/wallet')}
+              onClick={() => navigate('/dashboard/wallet', { state: { tab: 'add-money' } })}
               className="bg-white/20 hover:bg-white/30 text-white border-0"
             >
               <Plus className="h-4 w-4 mr-2" />
