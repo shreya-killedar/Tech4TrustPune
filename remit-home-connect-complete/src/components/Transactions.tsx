@@ -21,7 +21,7 @@ const getUserEmail = () => {
 
 const Transactions = () => {
   const { t } = useTranslation();
-  const userCurrency = getUserCurrency();
+  const [userCurrency, setUserCurrency] = useState(getUserCurrency());
   const userEmail = getUserEmail();
   const [transactions, setTransactions] = useState<any[]>([]);
 
@@ -38,7 +38,15 @@ const Transactions = () => {
       }
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
-    return () => window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for currency-changed event
+    const onCurrencyChanged = () => {
+      setUserCurrency(getUserCurrency());
+    };
+    window.addEventListener('currency-changed', onCurrencyChanged);
+    return () => {
+      window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('currency-changed', onCurrencyChanged);
+    };
   }, [userEmail]);
 
   const formatCurrency = (value: number, currency: string) => {

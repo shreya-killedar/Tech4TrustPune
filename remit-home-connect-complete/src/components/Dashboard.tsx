@@ -60,7 +60,7 @@ const getUserBalance = () => {
 const Dashboard = () => {
   const { t } = useTranslation();
   const [showBalance, setShowBalance] = useState(true);
-  const userCurrency = getUserCurrency();
+  const [userCurrency, setUserCurrency] = useState(getUserCurrency());
   const userName = getUserName();
   const userEmail = getUserEmail();
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -81,7 +81,15 @@ const Dashboard = () => {
       }
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
-    return () => window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for currency-changed event
+    const onCurrencyChanged = () => {
+      setUserCurrency(getUserCurrency());
+    };
+    window.addEventListener('currency-changed', onCurrencyChanged);
+    return () => {
+      window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('currency-changed', onCurrencyChanged);
+    };
   }, [userEmail]);
 
   const getStatusIcon = (status: string) => {
