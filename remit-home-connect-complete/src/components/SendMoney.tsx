@@ -36,7 +36,7 @@ const SendMoney = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const user = getAuthUser();
-  const userCurrency = user.currency || 'USD';
+  const [userCurrency, setUserCurrency] = useState(user.currency || 'USD');
   const [walletBalance, setWalletBalance] = useState(() => {
     try {
       const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -60,7 +60,16 @@ const SendMoney = () => {
       }
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
-    return () => window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for currency-changed event
+    const onCurrencyChanged = () => {
+      const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+      setUserCurrency(user.currency || 'USD');
+    };
+    window.addEventListener('currency-changed', onCurrencyChanged);
+    return () => {
+      window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('currency-changed', onCurrencyChanged);
+    };
   }, [user.email]);
 
   // Helper to get exchange rate from userCurrency to destCurrency

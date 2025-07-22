@@ -64,7 +64,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
   const { toast } = useToast();
   const user = getAuthUser();
   const userEmail = getUserEmail();
-  const userCurrency = user.currency || 'USD';
+  const [userCurrency, setUserCurrency] = useState(user.currency || 'USD');
   const navigate = useNavigate();
 
   // Helper to get balance from localStorage
@@ -94,9 +94,16 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       if (userEmail) setTransactions(getTransactions(userEmail));
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for currency-changed event
+    const onCurrencyChanged = () => {
+      const user = getAuthUser();
+      setUserCurrency(user.currency || 'USD');
+    };
+    window.addEventListener('currency-changed', onCurrencyChanged);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('currency-changed', onCurrencyChanged);
     };
   }, [userEmail]);
 

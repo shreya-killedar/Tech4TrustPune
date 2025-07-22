@@ -84,12 +84,16 @@ const Settings = () => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  const prevCurrency = authUser.currency;
   const handleSaveProfile = () => {
     setAuthUser({ ...authUser, ...profile });
     toast({
       title: "Profile Updated",
       description: "Your profile information has been saved successfully",
     });
+    if (prevCurrency !== profile.currency) {
+      window.dispatchEvent(new Event('currency-changed'));
+    }
     window.location.reload(); // To update top bar/profile everywhere
   };
 
@@ -216,11 +220,13 @@ const Settings = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {countries.map((country) => (
-                    <SelectItem key={country.currency} value={country.currency}>
-                      {country.currency} - {country.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem key="USD" value="USD">USD - US Dollar</SelectItem>
+                  {Array.from(new Set(countries.map(c => c.currency))).filter(cur => cur !== 'USD').map((cur) => {
+                    const country = countries.find(c => c.currency === cur);
+                    return (
+                      <SelectItem key={cur} value={cur}>{cur} - {country?.name || cur}</SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -445,14 +451,18 @@ const Settings = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="currency">Default Currency</Label>
-              <Select defaultValue="USD">
+              <Select value={profile.currency} onValueChange={(value) => setProfile({...profile, currency: value})}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem key="USD" value="USD">USD - US Dollar</SelectItem>
+                  {Array.from(new Set(countries.map(c => c.currency))).filter(cur => cur !== 'USD').map((cur) => {
+                    const country = countries.find(c => c.currency === cur);
+                    return (
+                      <SelectItem key={cur} value={cur}>{cur} - {country?.name || cur}</SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
