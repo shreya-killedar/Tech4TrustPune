@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, Globe, Menu, X } from 'lucide-react';
 import { languages } from '@/lib/data';
 import { useNavigate } from 'react-router-dom';
+import i18n from '../i18n';
+import { useTranslation } from 'react-i18next';
 
 function getAuthUser() {
   return JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -15,6 +17,7 @@ function getUserTransactions(email: string) {
 }
 
 const TopNav = () => {
+  const { t } = useTranslation();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -44,6 +47,19 @@ const TopNav = () => {
   const currentLanguage = languages.find(lang => lang.code === selectedLanguage);
   const userInitial = user.name ? user.name[0].toUpperCase() : '?';
 
+  const handleLanguageChange = (lang: string) => {
+    setSelectedLanguage(lang);
+    i18n.changeLanguage(lang);
+    // Update user language in localStorage
+    const user = getAuthUser();
+    if (user && user.email) {
+      const updatedUser = { ...user, language: lang };
+      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      // Optionally, trigger a reload or event if you want to update everywhere
+      window.dispatchEvent(new Event('wallet-balance-updated'));
+    }
+  };
+
   return (
     <nav className="hidden md:flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-50">
       {/* Logo */}
@@ -57,12 +73,12 @@ const TopNav = () => {
       {/* Navigation Links */}
       <div className="flex items-center gap-1">
         {[
-          { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
-          { id: 'send', label: 'Send Money', path: '/dashboard/send' },
-          { id: 'wallet', label: 'Wallet', path: '/dashboard/wallet' },
-          { id: 'savings', label: 'Savings', path: '/dashboard/savings' },
-          { id: 'insurance', label: 'Insurance', path: '/dashboard/insurance' },
-          { id: 'settings', label: 'Settings', path: '/dashboard/settings' }
+          { id: 'dashboard', label: t('dashboard.dashboard'), path: '/dashboard' },
+          { id: 'send', label: t('dashboard.sendMoney'), path: '/dashboard/send' },
+          { id: 'wallet', label: t('dashboard.wallet'), path: '/dashboard/wallet' },
+          { id: 'savings', label: t('dashboard.savings'), path: '/dashboard/savings' },
+          { id: 'insurance', label: t('dashboard.insurance'), path: '/dashboard/insurance' },
+          { id: 'settings', label: t('dashboard.settings'), path: '/dashboard/settings' }
         ].map((item) => (
           <Button
             key={item.id}
@@ -79,7 +95,7 @@ const TopNav = () => {
       {/* Right Actions */}
       <div className="flex items-center gap-3 relative">
         {/* Language Selector */}
-        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+        <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
           <SelectTrigger className="w-32">
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4" />

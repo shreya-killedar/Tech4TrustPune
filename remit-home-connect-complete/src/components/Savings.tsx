@@ -23,8 +23,10 @@ import {
 import { savingsGoals } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Savings = () => {
+  const { t } = useTranslation();
   const [newGoal, setNewGoal] = useState({
     name: '',
     target: '',
@@ -97,8 +99,8 @@ const Savings = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Savings & Goals</h1>
-          <p className="text-muted-foreground">Build your financial future</p>
+          <h1 className="text-2xl font-bold">{t('savings.title')}</h1>
+          <p className="text-muted-foreground">{t('savings.manageSavings')}</p>
         </div>
       </div>
 
@@ -107,16 +109,16 @@ const Savings = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-white/80">Total Saved</p>
+              <p className="text-sm text-white/80">{t('savings.totalSaved')}</p>
               <h2 className="text-3xl font-bold">${totalSaved.toLocaleString()}</h2>
-              <p className="text-sm text-white/80">of ${totalTarget.toLocaleString()} target</p>
+              <p className="text-sm text-white/80">{t('savings.ofTarget')}</p>
             </div>
             <PiggyBank className="h-12 w-12 text-white/80" />
           </div>
           
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Overall Progress</span>
+              <span>{t('savings.overallProgress')}</span>
               <span>{Math.round(overallProgress)}%</span>
             </div>
             <div className="w-full bg-white/20 rounded-full h-2">
@@ -132,9 +134,9 @@ const Savings = () => {
       {/* Tabs */}
       <Tabs defaultValue="goals" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="goals">My Goals</TabsTrigger>
-          <TabsTrigger value="save">Save Money</TabsTrigger>
-          <TabsTrigger value="create">Create Goal</TabsTrigger>
+          <TabsTrigger value="goals">{t('savings.myGoals')}</TabsTrigger>
+          <TabsTrigger value="save">{t('savings.saveMoney')}</TabsTrigger>
+          <TabsTrigger value="create">{t('savings.createGoal')}</TabsTrigger>
         </TabsList>
 
         {/* Goals Tab */}
@@ -155,29 +157,29 @@ const Savings = () => {
                         <h3 className="font-bold text-lg">{goal.name}</h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
-                          <span>{timeLeft > 0 ? `${timeLeft} days left` : 'Overdue'}</span>
+                          <span>{timeLeft > 0 ? `${timeLeft} ${t('savings.daysLeft')}` : `${t('savings.overdue')}`}</span>
                         </div>
                       </div>
                     </div>
                     <Badge variant={progress >= 100 ? 'default' : 'secondary'}>
-                      {Math.round(progress)}% Complete
+                      {Math.round(progress)}% {t('savings.complete')}
                     </Badge>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span>Progress</span>
+                      <span>{t('savings.progress')}</span>
                       <span>${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}</span>
                     </div>
                     <Progress value={progress} className="h-2" />
                     
                     <div className="grid grid-cols-2 gap-4 pt-2">
                       <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Remaining</p>
+                        <p className="text-sm text-muted-foreground">{t('savings.remaining')}</p>
                         <p className="font-bold text-primary">${(goal.targetAmount - goal.currentAmount).toLocaleString()}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Monthly Needed</p>
+                        <p className="text-sm text-muted-foreground">{t('savings.monthlyNeeded')}</p>
                         <p className="font-bold text-warning">
                           ${Math.ceil((goal.targetAmount - goal.currentAmount) / (timeLeft / 30)).toLocaleString()}
                         </p>
@@ -188,11 +190,9 @@ const Savings = () => {
                   <div className="flex gap-2 mt-4">
                     <Button variant="outline" className="flex-1">
                       <DollarSign className="h-4 w-4 mr-2" />
-                      Add Money
+                      {t('savings.addMoney')}
                     </Button>
-                    <Button variant="outline" size="sm">
-                      Edit Goal
-                    </Button>
+                    <Button variant="outline" size="sm">{t('savings.editGoal')}</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -204,11 +204,11 @@ const Savings = () => {
         <TabsContent value="save">
           <Card>
             <CardHeader>
-              <CardTitle>Quick Save</CardTitle>
+              <CardTitle>{t('savings.quickSave')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="deposit-amount">Amount to Save (USD)</Label>
+                <Label htmlFor="deposit-amount">{t('savings.amountToSave')}</Label>
                 <Input
                   id="deposit-amount"
                   type="number"
@@ -219,7 +219,7 @@ const Savings = () => {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-medium">Quick Save Options</h3>
+                <h3 className="font-medium">{t('savings.quickSaveOptions')}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[10, 25, 50, 100].map((amount) => (
                     <Button
@@ -236,7 +236,7 @@ const Savings = () => {
               </div>
 
               <div className="space-y-3">
-                <h3 className="font-medium">Choose Savings Goal</h3>
+                <h3 className="font-medium">{t('savings.chooseSavingsGoal')}</h3>
                 <div className="space-y-2">
                   {savingsGoals.map((goal) => (
                     <div key={goal.id} className="p-3 border rounded-lg cursor-pointer hover:border-primary transition-colors">
@@ -258,7 +258,7 @@ const Savings = () => {
 
               <Button onClick={handleDeposit} className="w-full" disabled={!depositAmount}>
                 <PiggyBank className="h-4 w-4 mr-2" />
-                Save ${depositAmount || '0'}
+                {t('savings.saveAmount', { amount: depositAmount || '0' })}
               </Button>
             </CardContent>
           </Card>
@@ -268,14 +268,14 @@ const Savings = () => {
         <TabsContent value="create">
           <Card>
             <CardHeader>
-              <CardTitle>Create New Savings Goal</CardTitle>
+              <CardTitle>{t('savings.createNewSavingsGoal')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="goal-name">Goal Name</Label>
+                <Label htmlFor="goal-name">{t('savings.goalName')}</Label>
                 <Input
                   id="goal-name"
-                  placeholder="e.g., Emergency Fund, New Car, Vacation"
+                  placeholder={t('savings.goalNamePlaceholder')}
                   className="placeholder-black"
                   value={newGoal.name}
                   onChange={(e) => setNewGoal({...newGoal, name: e.target.value})}
@@ -283,7 +283,7 @@ const Savings = () => {
               </div>
 
               <div>
-                <Label htmlFor="goal-target">Target Amount (USD)</Label>
+                <Label htmlFor="goal-target">{t('savings.targetAmount')}</Label>
                 <Input
                   id="goal-target"
                   type="number"
@@ -295,34 +295,34 @@ const Savings = () => {
               </div>
 
               <div>
-                <Label htmlFor="goal-category">Category</Label>
+                <Label htmlFor="goal-category">{t('savings.category')}</Label>
                 <Select value={newGoal.category} onValueChange={(value) => setNewGoal({...newGoal, category: value})}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder={t('savings.selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="emergency">
                       <div className="flex items-center gap-2">
                         <Heart className="h-4 w-4 text-red-500" />
-                        Emergency Fund
+                        {t('savings.emergencyFund')}
                       </div>
                     </SelectItem>
                     <SelectItem value="home">
                       <div className="flex items-center gap-2">
                         <Home className="h-4 w-4 text-blue-500" />
-                        Home & Property
+                        {t('savings.homeProperty')}
                       </div>
                     </SelectItem>
                     <SelectItem value="education">
                       <div className="flex items-center gap-2">
                         <GraduationCap className="h-4 w-4 text-green-500" />
-                        Education
+                        {t('savings.education')}
                       </div>
                     </SelectItem>
                     <SelectItem value="business">
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-4 w-4 text-purple-500" />
-                        Business
+                        {t('savings.business')}
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -330,7 +330,7 @@ const Savings = () => {
               </div>
 
               <div>
-                <Label htmlFor="goal-date">Target Date (Optional)</Label>
+                <Label htmlFor="goal-date">{t('savings.targetDate')}</Label>
                 <Input
                   id="goal-date"
                   type="date"
@@ -340,12 +340,12 @@ const Savings = () => {
               </div>
 
               <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">Smart Savings Tips</h4>
+                <h4 className="font-medium mb-2">{t('savings.smartSavingsTips')}</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Set up automatic transfers to reach your goals faster</li>
-                  <li>• Start with smaller, achievable goals to build momentum</li>
-                  <li>• Review and adjust your goals monthly</li>
-                  <li>• Celebrate milestones to stay motivated</li>
+                  <li>• {t('savings.smartSavingsTip1')}</li>
+                  <li>• {t('savings.smartSavingsTip2')}</li>
+                  <li>• {t('savings.smartSavingsTip3')}</li>
+                  <li>• {t('savings.smartSavingsTip4')}</li>
                 </ul>
               </div>
 
@@ -355,7 +355,7 @@ const Savings = () => {
                 disabled={!newGoal.name || !newGoal.target || !newGoal.category}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Create Savings Goal
+                {t('savings.createSavingsGoal')}
               </Button>
             </CardContent>
           </Card>

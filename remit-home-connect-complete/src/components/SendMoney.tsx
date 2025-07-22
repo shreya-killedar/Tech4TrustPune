@@ -10,6 +10,7 @@ import { Send, ArrowLeft, CreditCard, Banknote, Clock, Shield, CheckCircle } fro
 import { countries, exchangeRates } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 function getRecipients(userEmail: string) {
   return JSON.parse(localStorage.getItem(`recipients_${userEmail}`) || '[]');
@@ -22,6 +23,7 @@ function getAuthUser() {
 }
 
 const SendMoney = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     recipient: '',
@@ -126,8 +128,8 @@ const SendMoney = () => {
     const updatedUser = { ...authUser, balance: newBalance };
     localStorage.setItem('auth_user', JSON.stringify(updatedUser));
     toast({
-      title: "Money Sent Successfully!",
-      description: `${userCurrency} ${formData.amount} sent to ${formData.recipient} in ${selectedCountry?.name}`,
+      title: t('sendMoney.moneySentSuccess'),
+      description: `${userCurrency} ${formData.amount} ${t('sendMoney.sentTo')} ${formData.recipient} ${t('sendMoney.in')} ${selectedCountry?.name}`,
     });
     navigate('/dashboard');
   };
@@ -150,8 +152,8 @@ const SendMoney = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Send Money</h1>
-          <p className="text-muted-foreground">Transfer funds to friends and family.</p>
+          <h1 className="text-2xl font-bold">{t('sendMoney.tab')}</h1>
+          <p className="text-muted-foreground">{t('sendMoney.secureTransfer')}</p>
         </div>
       </div>
 
@@ -175,51 +177,51 @@ const SendMoney = () => {
       {step === 1 && (
         <Card>
           <CardHeader>
-            <CardTitle>Recipient Details</CardTitle>
+            <CardTitle>{t('sendMoney.recipientDetails')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="recipient">Recipient</Label>
+              <Label htmlFor="recipient">{t('sendMoney.recipient')}</Label>
               <Select
                 value={formData.recipient}
                 onValueChange={value => setFormData({ ...formData, recipient: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a recipient" />
+                  <SelectValue placeholder={t('sendMoney.selectRecipient')} />
                 </SelectTrigger>
                 <SelectContent>
                   {recipients.map((r) => (
-                    <SelectItem key={r.account} value={r.name}>{r.name} (Acc: {r.account})</SelectItem>
+                    <SelectItem key={r.account} value={r.name}>{r.name} ({t('sendMoney.acc')}: {r.account})</SelectItem>
                   ))}
                   <SelectItem value="__add_new__">
-                    <span className="text-blue-600">+ Add New Recipient</span>
+                    <span className="text-blue-600">{t('sendMoney.addNewRecipient')}</span>
                   </SelectItem>
                 </SelectContent>
               </Select>
               {formData.recipient === '__add_new__' && (
                 <div className="mt-2 space-y-2 border p-3 rounded bg-muted/30">
                   <Input
-                    placeholder="Recipient Name"
+                    placeholder={t('sendMoney.recipientName')}
                     className="placeholder-white text-white bg-card"
                     value={newRecipient.name}
                     onChange={e => setNewRecipient({ ...newRecipient, name: e.target.value })}
                   />
                   <Input
-                    placeholder="Account Number"
+                    placeholder={t('sendMoney.accountNumber')}
                     className="placeholder-white text-white bg-card"
                     value={newRecipient.account}
                     onChange={e => setNewRecipient({ ...newRecipient, account: e.target.value })}
                   />
-                  <Button onClick={handleAddRecipient} className="w-full">Save Recipient</Button>
+                  <Button onClick={handleAddRecipient} className="w-full">{t('sendMoney.saveRecipient')}</Button>
                 </div>
               )}
             </div>
 
             <div>
-              <Label htmlFor="country">Country</Label>
+              <Label htmlFor="country">{t('sendMoney.country')}</Label>
               <Select value={formData.country} onValueChange={(value) => setFormData({...formData, country: value})}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a country" />
+                  <SelectValue placeholder={t('sendMoney.selectCountry')} />
                 </SelectTrigger>
                 <SelectContent>
                   {countries.map((country) => (
@@ -236,11 +238,11 @@ const SendMoney = () => {
             </div>
 
             <div>
-              <Label htmlFor="amount">Amount ({userCurrency})</Label>
+              <Label htmlFor="amount">{t('sendMoney.amount')}</Label>
               <Input
                 id="amount"
                 type="number"
-                placeholder="0.00"
+                placeholder={t('sendMoney.amountPlaceholder')}
                 className="placeholder-white text-white bg-card"
                 value={formData.amount}
                 onChange={(e) => setFormData({...formData, amount: e.target.value})}
@@ -248,10 +250,10 @@ const SendMoney = () => {
               {selectedCountry && formData.amount && (
                 <>
                   {exchangeRate === 0 && userCurrency !== destCurrency ? (
-                    <p className="text-sm text-red-500 mt-1">Conversion unavailable.</p>
+                    <p className="text-sm text-red-500 mt-1">{t('sendMoney.conversionUnavailable')}</p>
                   ) : (
                     <p className="text-sm text-muted-foreground mt-1">
-                      You will receive {convertedAmount.toLocaleString()} {selectedCountry.currency}
+                      {t('sendMoney.youWillReceive')} {convertedAmount.toLocaleString()} {selectedCountry.currency}
                     </p>
                   )}
                 </>
@@ -259,17 +261,17 @@ const SendMoney = () => {
             </div>
 
             <div>
-              <Label htmlFor="purpose">Purpose</Label>
+              <Label htmlFor="purpose">{t('sendMoney.purpose')}</Label>
               <Select value={formData.purpose} onValueChange={(value) => setFormData({...formData, purpose: value})}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a purpose" />
+                  <SelectValue placeholder={t('sendMoney.selectPurpose')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="family-support">Family Support</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="medical">Medical</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="family-support">{t('sendMoney.familySupport')}</SelectItem>
+                  <SelectItem value="education">{t('sendMoney.education')}</SelectItem>
+                  <SelectItem value="medical">{t('sendMoney.medical')}</SelectItem>
+                  <SelectItem value="business">{t('sendMoney.business')}</SelectItem>
+                  <SelectItem value="other">{t('sendMoney.other')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -279,7 +281,7 @@ const SendMoney = () => {
               className="w-full" 
               disabled={!formData.recipient || !formData.country || !formData.amount || !formData.purpose || (formData.recipient === '__add_new__' && (!newRecipient.name || !newRecipient.account))}
             >
-              Continue
+              {t('sendMoney.continue')}
             </Button>
           </CardContent>
         </Card>
@@ -289,7 +291,7 @@ const SendMoney = () => {
       {step === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Payment Method</CardTitle>
+            <CardTitle>{t('sendMoney.paymentMethod')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
@@ -302,10 +304,10 @@ const SendMoney = () => {
                 <div className="flex items-center gap-3">
                   <CreditCard className="h-6 w-6 text-primary" />
                   <div className="flex-1">
-                    <p className="font-medium">Wallet Balance</p>
-                    <p className="text-sm text-muted-foreground">Available: {userCurrency} {walletBalance.toLocaleString()}</p>
+                    <p className="font-medium">{t('sendMoney.walletBalance')}</p>
+                    <p className="text-sm text-muted-foreground">{t('sendMoney.available')}: {userCurrency} {walletBalance.toLocaleString()}</p>
                   </div>
-                  <Badge variant="default">Instant</Badge>
+                  <Badge variant="default">{t('sendMoney.instant')}</Badge>
                 </div>
               </div>
 
@@ -318,24 +320,22 @@ const SendMoney = () => {
                 <div className="flex items-center gap-3">
                   <Banknote className="h-6 w-6 text-primary" />
                   <div className="flex-1">
-                    <p className="font-medium">Bank Account</p>
+                    <p className="font-medium">{t('sendMoney.bankAccount')}</p>
                     <p className="text-sm text-muted-foreground">••••3456</p>
                   </div>
-                  <Badge variant="secondary">1-2 Days</Badge>
+                  <Badge variant="secondary">{t('sendMoney.bankTransfer')}</Badge>
                 </div>
               </div>
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleBack} className="flex-1">
-                Back
-              </Button>
+              <Button variant="outline" onClick={handleBack} className="flex-1">{t('sendMoney.back')}</Button>
               <Button 
                 onClick={handleNext} 
                 className="flex-1"
                 disabled={!formData.paymentMethod}
               >
-                Continue
+                {t('sendMoney.continue')}
               </Button>
             </div>
           </CardContent>
@@ -346,13 +346,13 @@ const SendMoney = () => {
       {step === 3 && (
         <Card>
           <CardHeader>
-            <CardTitle>Review Transfer</CardTitle>
+            <CardTitle>{t('sendMoney.reviewTransfer')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Transfer Summary */}
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">To</span>
+                <span className="text-muted-foreground">{t('sendMoney.to')}</span>
                 <div className="text-right">
                   <p className="font-medium">{formData.recipient}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
@@ -362,31 +362,31 @@ const SendMoney = () => {
               </div>
 
               <div className="flex justify-between">
-                <span className="text-muted-foreground">You Send</span>
+                <span className="text-muted-foreground">{t('sendMoney.youSend')}</span>
                 <p className="font-medium">{userCurrency} {parseFloat(formData.amount).toLocaleString()}</p>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Transfer Fee</span>
+                <span className="text-muted-foreground">{t('sendMoney.transferFee')}</span>
                 <p className="font-medium">{userCurrency} {transferFee.toFixed(2)}</p>
               </div>
 
               <Separator />
 
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Amount</span>
+                <span className="text-muted-foreground">{t('sendMoney.totalAmount')}</span>
                 <p className="font-bold text-lg">{userCurrency} {totalAmount.toFixed(2)}</p>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Recipient Gets</span>
+                <span className="text-muted-foreground">{t('sendMoney.recipientGets')}</span>
                 <p className="font-bold text-lg text-success">
                   {convertedAmount.toLocaleString()} {selectedCountry?.currency}
                 </p>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Exchange Rate</span>
+                <span className="text-muted-foreground">{t('sendMoney.exchangeRate')}</span>
                 <p className="font-medium">1 {userCurrency} = {exchangeRate} {selectedCountry?.currency}</p>
               </div>
             </div>
@@ -395,31 +395,29 @@ const SendMoney = () => {
             <div className="bg-muted/50 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="h-4 w-4 text-primary" />
-                <span className="font-medium">Secure Transfer</span>
+                <span className="font-medium">{t('sendMoney.secureTransfer')}</span>
               </div>
               <div className="space-y-1 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Clock className="h-3 w-3" />
-                  <span>Delivered in minutes</span>
+                  <span>{t('sendMoney.deliveredInMinutes')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="h-3 w-3" />
-                  <span>Bank-level security</span>
+                  <span>{t('sendMoney.bankLevelSecurity')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3 w-3" />
-                  <span>Guaranteed delivery</span>
+                  <span>{t('sendMoney.guaranteedDelivery')}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleBack} className="flex-1">
-                Back
-              </Button>
+              <Button variant="outline" onClick={handleBack} className="flex-1">{t('sendMoney.back')}</Button>
               <Button onClick={handleSend} className="flex-1">
                 <Send className="h-4 w-4 mr-2" />
-                Send Money
+                {t('sendMoney.sendMoney')}
               </Button>
             </div>
           </CardContent>

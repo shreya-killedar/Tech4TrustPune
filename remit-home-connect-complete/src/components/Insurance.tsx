@@ -20,8 +20,10 @@ import {
 import { insuranceOptions } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Insurance = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('my-insurance');
   const [activeInsurance, setActiveInsurance] = useState(insuranceOptions.filter(i => i.isActive));
   const [allInsurance] = useState(insuranceOptions);
@@ -88,8 +90,8 @@ const Insurance = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Insurance Protection</h1>
-          <p className="text-muted-foreground">Protect yourself and your family</p>
+          <h1 className="text-2xl font-bold">{t('insurance.title')}</h1>
+          <p className="text-muted-foreground">{t('insurance.manageInsurance')}</p>
         </div>
       </div>
 
@@ -98,22 +100,22 @@ const Insurance = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-white/80">Total Protection</p>
+              <p className="text-sm text-white/80">{t('insurance.totalProtection')}</p>
               <h2 className="text-3xl font-bold">${totalCoverage.toLocaleString()}</h2>
-              <p className="text-sm text-white/80">Monthly Premium: ${totalMonthlyPremium}/month</p>
+              <p className="text-sm text-white/80">{t('insurance.monthlyPremium')}: ${totalMonthlyPremium}/month</p>
             </div>
             <Shield className="h-12 w-12 text-white/80" />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <p className="text-sm text-white/80">Active Policies</p>
+              <p className="text-sm text-white/80">{t('insurance.activePolicies')}</p>
               <p className="font-bold text-lg">
                 {activeInsurance.filter(i => i.isActive).length}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-white/80">You Save</p>
+              <p className="text-sm text-white/80">{t('insurance.youSave')}</p>
               <p className="font-bold text-lg">
                 {activeInsurance.filter(i => i.isActive).length > 1 ? '15%' : '0%'}
               </p>
@@ -124,8 +126,8 @@ const Insurance = () => {
 
       <Tabs defaultValue="my-insurance" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="my-insurance">My Insurance</TabsTrigger>
-          <TabsTrigger value="explore">Explore Plans</TabsTrigger>
+          <TabsTrigger value="my-insurance">{t('insurance.myInsurance')}</TabsTrigger>
+          <TabsTrigger value="explore">{t('insurance.explorePlans')}</TabsTrigger>
         </TabsList>
 
         {/* My Insurance Tab */}
@@ -163,20 +165,20 @@ const Insurance = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <DollarSign className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <p className="text-sm text-muted-foreground">Monthly Premium</p>
+                    <p className="text-sm text-muted-foreground">{t('insurance.monthlyPremium')}</p>
                     <p className="font-bold text-lg">${insurance.monthlyPremium}</p>
                   </div>
                   
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <Shield className="h-6 w-6 mx-auto mb-2 text-success" />
-                    <p className="text-sm text-muted-foreground">Coverage Amount</p>
+                    <p className="text-sm text-muted-foreground">{t('insurance.coverageAmount')}</p>
                     <p className="font-bold text-lg">${insurance.coverage.toLocaleString()}</p>
                   </div>
                   
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <Users className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-                    <p className="text-sm text-muted-foreground">Beneficiaries</p>
-                    <p className="font-bold text-lg">Family</p>
+                    <p className="text-sm text-muted-foreground">{t('insurance.beneficiaries')}</p>
+                    <p className="font-bold text-lg">{t('insurance.family')}</p>
                   </div>
                 </div>
 
@@ -184,7 +186,7 @@ const Insurance = () => {
                   <div className="mt-6 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-800 dark:text-green-200">You're Protected</span>
+                      <span className="font-medium text-green-800 dark:text-green-200">{t('insurance.youreProtected')}</span>
                     </div>
                     <p className="text-sm text-green-700 dark:text-green-300">
                       This policy is active and you're covered. Claims can be filed 24/7 through our app.
@@ -193,12 +195,8 @@ const Insurance = () => {
                 )}
 
                 <div className="flex gap-2 mt-4">
-                  <Button variant="outline" className="flex-1">
-                    View Details
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    File Claim
-                  </Button>
+                  <Button variant="outline" className="flex-1">{t('insurance.viewDetails')}</Button>
+                  <Button variant="outline" className="flex-1">{t('insurance.fileClaim')}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -209,51 +207,51 @@ const Insurance = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="h-5 w-5" />
-                Why Insurance Matters for Migrant Workers
+                {t('insurance.whyInsuranceMatters')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h4 className="font-medium">Health Insurance Benefits</h4>
+                  <h4 className="font-medium">{t('insurance.healthInsuranceBenefits')}</h4>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      Emergency medical coverage
+                      {t('insurance.emergencyMedicalCoverage')}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      No pre-existing condition waiting period
+                      {t('insurance.noPreExistingConditionWaitingPeriod')}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      Preventive care included
+                      {t('insurance.preventiveCareIncluded')}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      24/7 telemedicine support
+                      {t('insurance.telemedicineSupport')}
                     </li>
                   </ul>
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-medium">Life Insurance Benefits</h4>
+                  <h4 className="font-medium">{t('insurance.lifeInsuranceBenefits')}</h4>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      Financial protection for family
+                      {t('insurance.financialProtectionForFamily')}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      International beneficiary support
+                      {t('insurance.internationalBeneficiarySupport')}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      No medical exam required
+                      {t('insurance.noMedicalExamRequired')}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
-                      Coverage while traveling
+                      {t('insurance.coverageWhileTraveling')}
                     </li>
                   </ul>
                 </div>
@@ -274,39 +272,37 @@ const Insurance = () => {
                     <Heart className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Premium Health</CardTitle>
-                    <p className="text-sm text-muted-foreground">Comprehensive coverage</p>
+                    <CardTitle className="text-lg">{t('insurance.premiumHealth')}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{t('insurance.comprehensiveCoverage')}</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-green-600">$45</p>
-                  <p className="text-sm text-muted-foreground">/month</p>
+                  <p className="text-sm text-muted-foreground">{t('insurance.perMonth')}</p>
                 </div>
                 
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    $25,000 coverage
+                    {t('insurance.coverage25000')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Worldwide coverage
+                    {t('insurance.worldwideCoverage')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Dental & Vision included
+                    {t('insurance.dentalVisionIncluded')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Mental health support
+                    {t('insurance.mentalHealthSupport')}
                   </li>
                 </ul>
                 
-                <Button className="w-full">
-                  Select Plan
-                </Button>
+                <Button className="w-full">{t('insurance.selectPlan')}</Button>
               </CardContent>
             </Card>
 
@@ -319,39 +315,37 @@ const Insurance = () => {
                     <UserCheck className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Family Life</CardTitle>
-                    <p className="text-sm text-muted-foreground">Protect your loved ones</p>
+                    <CardTitle className="text-lg">{t('insurance.familyLife')}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{t('insurance.protectYourLovedOnes')}</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-blue-600">$30</p>
-                  <p className="text-sm text-muted-foreground">/month</p>
+                  <p className="text-sm text-muted-foreground">{t('insurance.perMonth')}</p>
                 </div>
                 
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    $100,000 coverage
+                    {t('insurance.coverage100000')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Accidental death benefit
+                    {t('insurance.accidentalDeathBenefit')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    No waiting period
+                    {t('insurance.noWaitingPeriod')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    International claims
+                    {t('insurance.internationalClaims')}
                   </li>
                 </ul>
                 
-                <Button variant="outline" className="w-full">
-                  Select Plan
-                </Button>
+                <Button variant="outline" className="w-full">{t('insurance.selectPlan')}</Button>
               </CardContent>
             </Card>
 
@@ -364,39 +358,37 @@ const Insurance = () => {
                     <AlertTriangle className="h-6 w-6 text-orange-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Accident Shield</CardTitle>
-                    <p className="text-sm text-muted-foreground">Workplace protection</p>
+                    <CardTitle className="text-lg">{t('insurance.accidentShield')}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{t('insurance.workplaceProtection')}</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-orange-600">$20</p>
-                  <p className="text-sm text-muted-foreground">/month</p>
+                  <p className="text-sm text-muted-foreground">{t('insurance.perMonth')}</p>
                 </div>
                 
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    $50,000 coverage
+                    {t('insurance.coverage50000')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Workplace accidents
+                    {t('insurance.workplaceAccidents')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Disability benefits
+                    {t('insurance.disabilityBenefits')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    24/7 claim support
+                    {t('insurance.claimSupport247')}
                   </li>
                 </ul>
                 
-                <Button variant="outline" className="w-full">
-                  Select Plan
-                </Button>
+                <Button variant="outline" className="w-full">{t('insurance.selectPlan')}</Button>
               </CardContent>
             </Card>
           </div>
@@ -404,26 +396,26 @@ const Insurance = () => {
           {/* Insurance Education */}
           <Card>
             <CardHeader>
-              <CardTitle>Insurance Made Simple</CardTitle>
+              <CardTitle>{t('insurance.insuranceMadeSimple')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center space-y-2">
                   <Hospital className="h-8 w-8 mx-auto text-blue-500" />
-                  <h4 className="font-medium">Quick Claims</h4>
-                  <p className="text-sm text-muted-foreground">File claims instantly through the app with photo uploads</p>
+                  <h4 className="font-medium">{t('insurance.quickClaims')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('insurance.fileClaimsInstantly')}</p>
                 </div>
                 
                 <div className="text-center space-y-2">
                   <Users className="h-8 w-8 mx-auto text-green-500" />
-                  <h4 className="font-medium">Family Coverage</h4>
-                  <p className="text-sm text-muted-foreground">Extend protection to your family members back home</p>
+                  <h4 className="font-medium">{t('insurance.familyCoverage')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('insurance.extendProtectionToFamilyMembers')}</p>
                 </div>
                 
                 <div className="text-center space-y-2">
                   <Shield className="h-8 w-8 mx-auto text-purple-500" />
-                  <h4 className="font-medium">No Hidden Fees</h4>
-                  <p className="text-sm text-muted-foreground">Transparent pricing with no surprise charges or deductibles</p>
+                  <h4 className="font-medium">{t('insurance.noHiddenFees')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('insurance.transparentPricing')}</p>
                 </div>
               </div>
             </CardContent>
