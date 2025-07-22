@@ -8,109 +8,91 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 193 75% 50%;
-    --primary-foreground: 240 10% 3.9%;
-    --primary-glow: 193 85% 65%;
-
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-
+    --background: 220 20% 99%; /* #f9fafb, creamy white */
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 217 91% 60%; /* vibrant but soft blue */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 100% 75%;
+    --secondary: 174 62% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 16% 96%; /* ultra-soft card bg */
+    --muted-foreground: 222 20% 40%;
+    --accent: 210 16% 92%; /* warm gray accent */
+    --accent-foreground: 217 91% 60%;
     --success: 142 76% 36%;
-    --success-foreground: 355 7% 97%;
-
+    --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 48 96% 89%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
-
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 193 75% 50%;
-
-    /* Financial app specific colors */
+    --border: 220 16% 90%;
+    --input: 220 16% 90%;
+    --ring: 217 91% 60%;
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 45%));
-    --gradient-card: linear-gradient(145deg, hsl(240 3.7% 15.9%), hsl(240 5% 18%));
-    
-    /* Shadows */
-    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.3);
-    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.3);
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --gradient-card: linear-gradient(145deg, hsl(220 16% 96%), hsl(220 20% 99%));
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.10);
+    --shadow-card: 0 6px 32px hsl(217 91% 60% / 0.06);
+    --radius: 0.75rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 16% 96%;
+    --sidebar-accent-foreground: 217 91% 60%;
+    --sidebar-border: 220 16% 90%;
+    --sidebar-ring: 217 91% 60%;
+    --input-text: 0 0% 0%;
+    --input-placeholder: 0 0% 30%;
   }
-}
+  .dark {
+    --background: 222 40% 12%; /* #181f2a, deep blue-black */
+    --foreground: 210 40% 98%;
+    --card: 222 32% 18%; /* blue-gray glassy card */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 32% 18%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 100% 70%; /* glowing blue */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 100% 80%;
+    --secondary: 174 62% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 222 20% 16%; /* glassy card bg */
+    --muted-foreground: 210 16% 80%;
+    --accent: 265 60% 40%; /* purple/teal accent */
+    --accent-foreground: 217 100% 80%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 20% 16%;
+    --input: 222 20% 16%;
+    --ring: 217 100% 70%;
+    --sidebar-background: 222 32% 18%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 217 100% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 265 60% 40%;
+    --sidebar-accent-foreground: 217 100% 80%;
+    --sidebar-border: 222 20% 16%;
+    --sidebar-ring: 217 100% 70%;
+    --input-text: 0 0% 100%;
+    --input-placeholder: 0 0% 80%;
+  }
+  input, .input, input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea {
+    color: hsl(var(--input-text)) !important;
+  }
+  input::placeholder, .input::placeholder, textarea::placeholder {
+    color: hsl(var(--input-placeholder)) !important;
+    opacity: 1;
+  }
 
-@layer base {
   * {
     @apply border-border;
   }

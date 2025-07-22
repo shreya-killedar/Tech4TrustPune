@@ -29,7 +29,7 @@ const Login = () => {
         <input
           type="email"
           placeholder={t('onboarding.email')}
-          className="w-full border px-3 py-2 text-white placeholder-white bg-card"
+          className="w-full border px-3 py-2 text-black placeholder-black bg-card"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -37,7 +37,7 @@ const Login = () => {
         <input
           type="password"
           placeholder={t('onboarding.password')}
-          className="w-full border px-3 py-2 text-white placeholder-white bg-card"
+          className="w-full border px-3 py-2 text-black placeholder-black bg-card"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

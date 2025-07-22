@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { 
   Wallet as WalletIcon, 
@@ -19,6 +19,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 interface WalletProps {
   onNavigate: (page: string) => void;
@@ -52,6 +53,29 @@ function saveTransaction(userEmail: string, tx: any) {
   localStorage.setItem(key, JSON.stringify(txs));
 }
 
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount);
+}
+
+function updateUserBalance(email: string, newBalance: number) {
+  // Update auth_user
+  const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+  if (authUser.email === email) {
+    authUser.balance = newBalance;
+    localStorage.setItem('auth_user', JSON.stringify(authUser));
+  }
+  // Update users array
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const idx = users.findIndex(u => u.email === email);
+  if (idx !== -1) {
+    users[idx].balance = newBalance;
+    localStorage.setItem('users', JSON.stringify(users));
+  }
+}
+
 const Wallet = ({ onNavigate }: WalletProps) => {
   const [showBalance, setShowBalance] = useState(true);
   const [addAmount, setAddAmount] = useState('');
@@ -60,9 +84,13 @@ const Wallet = ({ onNavigate }: WalletProps) => {
   const [tab, setTab] = useState('transactions');
   const [transactions, setTransactions] = useState<any[]>([]);
   const { toast } = useToast();
+  const [managerOpen, setManagerOpen] = useState(false);
   const user = getAuthUser();
   const userEmail = getUserEmail();
   const userCurrency = user.currency || 'USD';
+  const [recipients, setRecipients] = useState(() => JSON.parse(localStorage.getItem(`recipients_${userEmail}`) || '[]'));
+  const [insurance, setInsurance] = useState(() => JSON.parse(localStorage.getItem(`insurance_${userEmail}`) || '[]'));
+  const [savings, setSavings] = useState(() => JSON.parse(localStorage.getItem(`savings_${userEmail}`) || '[]'));
   const navigate = useNavigate();
 
   // Helper to get balance from localStorage
@@ -104,7 +132,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
     if (amt && amt > 0) {
       const newBalance = balance + amt;
       setBalance(newBalance);
-      setAuthUser({ ...user, balance: newBalance });
+      updateUserBalance(userEmail, newBalance);
       // Add transaction
       const now = new Date();
       saveTransaction(userEmail, {
@@ -134,7 +162,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
     if (amt && amt > 0 && amt <= balance) {
       const newBalance = balance - amt;
       setBalance(newBalance);
-      setAuthUser({ ...user, balance: newBalance });
+      updateUserBalance(userEmail, newBalance);
       // Add transaction
       const now = new Date();
       saveTransaction(userEmail, {
@@ -184,6 +212,161 @@ const Wallet = ({ onNavigate }: WalletProps) => {
           <p className="text-muted-foreground">Manage your digital wallet</p>
         </div>
       </div>
+
+      {/* Wallet Manager Card */}
+      <Card
+        className="border-0 shadow-2xl rounded-3xl overflow-hidden relative mb-8"
+        style={{
+          background: 'linear-gradient(120deg, hsla(var(--primary),0.10) 0%, hsla(var(--secondary),0.08) 100%), hsla(var(--card), 0.90)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          border: '2px solid hsla(var(--primary),0.12)',
+          boxShadow: '0 8px 32px 0 hsla(var(--primary),0.10)',
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
+        <CardContent className="p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+          <div>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2" style={{ color: 'hsl(var(--muted-foreground))', letterSpacing: '0.08em' }}>Wallet Manager</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg" style={{ color: 'hsl(var(--foreground))', letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.12)' }}>{formatCurrency(balance)}</p>
+              <span className="text-lg font-bold text-primary">{userCurrency}</span>
+            </div>
+            <p className="text-muted-foreground mt-2">{userEmail}</p>
+          </div>
+          <div className="flex flex-col gap-3 items-end">
+            <Button
+              size="lg"
+              variant="default"
+              onClick={() => setManagerOpen(true)}
+              className="bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0"
+            >
+              View All Wallet Data
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      {/* Wallet Manager Modal */}
+      <Dialog open={managerOpen} onOpenChange={setManagerOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Wallet Data Manager</DialogTitle>
+            <DialogDescription>View all your wallet-related data in one place.</DialogDescription>
+          </DialogHeader>
+          <Tabs defaultValue="transactions" className="w-full mt-4">
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="transactions">Transactions</TabsTrigger>
+              <TabsTrigger value="recipients">Recipients</TabsTrigger>
+              <TabsTrigger value="insurance">Insurance</TabsTrigger>
+              <TabsTrigger value="savings">Savings</TabsTrigger>
+            </TabsList>
+            <TabsContent value="transactions">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-3 py-2 text-left">Date</th>
+                      <th className="px-3 py-2 text-left">Type</th>
+                      <th className="px-3 py-2 text-left">Amount</th>
+                      <th className="px-3 py-2 text-left">Currency</th>
+                      <th className="px-3 py-2 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((tx, i) => (
+                      <tr key={tx.id || i} className="border-b last:border-b-0">
+                        <td className="px-3 py-2">{tx.date}</td>
+                        <td className="px-3 py-2 capitalize">{tx.type}</td>
+                        <td className="px-3 py-2">{formatCurrency(tx.amount)}</td>
+                        <td className="px-3 py-2">{tx.currency}</td>
+                        <td className="px-3 py-2">{tx.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+            <TabsContent value="recipients">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-3 py-2 text-left">Name</th>
+                      <th className="px-3 py-2 text-left">Account</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recipients.map((r, i) => (
+                      <tr key={r.account || i} className="border-b last:border-b-0">
+                        <td className="px-3 py-2">{r.name}</td>
+                        <td className="px-3 py-2">{r.account}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+            <TabsContent value="insurance">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-3 py-2 text-left">Name</th>
+                      <th className="px-3 py-2 text-left">Type</th>
+                      <th className="px-3 py-2 text-left">Premium</th>
+                      <th className="px-3 py-2 text-left">Coverage</th>
+                      <th className="px-3 py-2 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {insurance.map((ins, i) => (
+                      <tr key={ins.id || i} className="border-b last:border-b-0">
+                        <td className="px-3 py-2">{ins.name}</td>
+                        <td className="px-3 py-2 capitalize">{ins.type}</td>
+                        <td className="px-3 py-2">{formatCurrency(ins.monthlyPremium)}</td>
+                        <td className="px-3 py-2">{formatCurrency(ins.coverage)}</td>
+                        <td className="px-3 py-2">{ins.isActive ? 'Active' : 'Inactive'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+            <TabsContent value="savings">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-3 py-2 text-left">Name</th>
+                      <th className="px-3 py-2 text-left">Target</th>
+                      <th className="px-3 py-2 text-left">Current</th>
+                      <th className="px-3 py-2 text-left">Due Date</th>
+                      <th className="px-3 py-2 text-left">Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {savings.map((goal, i) => (
+                      <tr key={goal.id || i} className="border-b last:border-b-0">
+                        <td className="px-3 py-2">{goal.name}</td>
+                        <td className="px-3 py-2">{formatCurrency(goal.targetAmount)}</td>
+                        <td className="px-3 py-2">{formatCurrency(goal.currentAmount)}</td>
+                        <td className="px-3 py-2">{goal.dueDate}</td>
+                        <td className="px-3 py-2 capitalize">{goal.category}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+          </Tabs>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Balance Card */}
       <Card className="bg-gradient-to-r from-primary to-primary-glow text-white border-0 shadow-lg">

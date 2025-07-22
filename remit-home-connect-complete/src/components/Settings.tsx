@@ -121,7 +121,7 @@ const Settings = () => {
         </Button>
         <div>
           <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-muted-foreground">Manage your application settings and preferences.</p>
+          <p className="text-muted-foreground">Manage your account and preferences</p>
         </div>
       </div>
 
@@ -134,7 +134,10 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <span className="font-medium">Light</span>
-          <Switch checked={theme === 'dark'} onCheckedChange={v => setTheme(v ? 'dark' : 'light')} />
+          <Switch
+            checked={theme === 'light'}
+            onCheckedChange={(checked) => setTheme(checked ? 'light' : 'dark')}
+          />
           <span className="font-medium">Dark</span>
         </CardContent>
       </Card>

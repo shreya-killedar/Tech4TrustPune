@@ -37,14 +37,14 @@ const Register = () => {
         <input
           type="text"
           placeholder={t('onboarding.name')}
-          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-white bg-card"
+          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-black placeholder-black bg-card"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
         <div>
           <select
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-white bg-card"
+            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-black placeholder-black bg-card"
             value={country}
             onChange={e => setCountry(e.target.value)}
             required
@@ -60,7 +60,7 @@ const Register = () => {
         <input
           type="email"
           placeholder={t('onboarding.email')}
-          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-white bg-card"
+          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-black placeholder-black bg-card"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -68,7 +68,7 @@ const Register = () => {
         <input
           type="password"
           placeholder={t('onboarding.password')}
-          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-white placeholder-white bg-card"
+          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary text-black placeholder-black bg-card"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
