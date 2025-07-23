@@ -24,9 +24,34 @@ import { savingsGoals } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
+function getAuthUser() {
+  try {
+    return JSON.parse(localStorage.getItem('auth_user') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function getUserSavingsGoals(email: string) {
+  const key = `savingsGoals_${email}`;
+  const stored = localStorage.getItem(key);
+  if (stored) return JSON.parse(stored);
+  // fallback to sample data
+  return savingsGoals;
+}
+
+function setUserSavingsGoals(email: string, goals: any[]) {
+  const key = `savingsGoals_${email}`;
+  localStorage.setItem(key, JSON.stringify(goals));
+}
 
 const Savings = () => {
   const { t } = useTranslation();
+  const user = getAuthUser();
+  const userEmail = user.email || 'sample';
+  const [goals, setGoals] = useState(() => getUserSavingsGoals(userEmail));
   const [newGoal, setNewGoal] = useState({
     name: '',
     target: '',
@@ -34,17 +59,38 @@ const Savings = () => {
     dueDate: ''
   });
   const [depositAmount, setDepositAmount] = useState('');
+  const [selectedGoal, setSelectedGoal] = useState<any | null>(null);
+  const [showAddMoney, setShowAddMoney] = useState(false);
+  const [showEditGoal, setShowEditGoal] = useState(false);
+  const [editGoalData, setEditGoalData] = useState<any | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const totalSaved = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-  const totalTarget = savingsGoals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+  const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+  const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
   const overallProgress = (totalSaved / totalTarget) * 100;
+
+  // Save to localStorage whenever goals change
+  function updateGoals(newGoals: any[]) {
+    setGoals(newGoals);
+    setUserSavingsGoals(userEmail, newGoals);
+  }
 
   const handleCreateGoal = () => {
     if (newGoal.name && newGoal.target && newGoal.category) {
+      const newGoalObj = {
+        id: Date.now().toString(),
+        name: newGoal.name,
+        targetAmount: parseFloat(newGoal.target),
+        currentAmount: 0,
+        currency: user.currency || 'USD',
+        dueDate: newGoal.dueDate,
+        category: newGoal.category
+      };
+      const updated = [...goals, newGoalObj];
+      updateGoals(updated);
       toast({
-        title: "Savings Goal Created!",
+        title: 'Savings Goal Created!',
         description: `Your goal "${newGoal.name}" has been created successfully`,
       });
       setNewGoal({ name: '', target: '', category: '', dueDate: '' });
@@ -52,12 +98,32 @@ const Savings = () => {
   };
 
   const handleDeposit = () => {
-    if (depositAmount) {
+    if (depositAmount && selectedGoal) {
+      const amt = parseFloat(depositAmount);
+      if (amt > 0) {
+        const updated = goals.map(g => g.id === selectedGoal.id ? { ...g, currentAmount: g.currentAmount + amt } : g);
+        updateGoals(updated);
+        toast({
+          title: 'Money Saved!',
+          description: `$${amt} added to your savings goal "${selectedGoal.name}"`,
+        });
+        setDepositAmount('');
+        setShowAddMoney(false);
+        setSelectedGoal(null);
+      }
+    }
+  };
+
+  const handleEditGoal = () => {
+    if (editGoalData && editGoalData.name && editGoalData.targetAmount && editGoalData.category) {
+      const updated = goals.map(g => g.id === editGoalData.id ? { ...g, ...editGoalData } : g);
+      updateGoals(updated);
       toast({
-        title: "Money Saved!",
-        description: `$${depositAmount} added to your savings`,
+        title: 'Goal Updated!',
+        description: `Your goal "${editGoalData.name}" has been updated.`,
       });
-      setDepositAmount('');
+      setShowEditGoal(false);
+      setEditGoalData(null);
     }
   };
 
@@ -141,7 +207,7 @@ const Savings = () => {
 
         {/* Goals Tab */}
         <TabsContent value="goals" className="space-y-4">
-          {savingsGoals.map((goal) => {
+          {goals.map((goal) => {
             const progress = (goal.currentAmount / goal.targetAmount) * 100;
             const timeLeft = Math.ceil((new Date(goal.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
             
@@ -188,11 +254,11 @@ const Savings = () => {
                   </div>
 
                   <div className="flex gap-2 mt-4">
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" className="flex-1" onClick={() => { setSelectedGoal(goal); setShowAddMoney(true); }}>
                       <DollarSign className="h-4 w-4 mr-2" />
                       {t('savings.addMoney')}
                     </Button>
-                    <Button variant="outline" size="sm">{t('savings.editGoal')}</Button>
+                    <Button variant="outline" size="sm" onClick={() => { setEditGoalData({ ...goal }); setShowEditGoal(true); }}>{t('savings.editGoal')}</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -238,25 +304,34 @@ const Savings = () => {
               <div className="space-y-3">
                 <h3 className="font-medium">{t('savings.chooseSavingsGoal')}</h3>
                 <div className="space-y-2">
-                  {savingsGoals.map((goal) => (
-                    <div key={goal.id} className="p-3 border rounded-lg cursor-pointer hover:border-primary transition-colors">
+                  {goals.map((goal) => (
+                    <div
+                      key={goal.id}
+                      className={`p-3 border rounded-lg cursor-pointer hover:border-primary transition-colors ${selectedGoal && selectedGoal.id === goal.id ? 'border-primary' : ''}`}
+                      onClick={() => setSelectedGoal(goal)}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center ${getCategoryColor(goal.category)}`}>
-                            {getCategoryIcon(goal.category)}
-                          </div>
+                          <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center ${getCategoryColor(goal.category)}`}>{getCategoryIcon(goal.category)}</div>
                           <span className="font-medium">{goal.name}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
                         </span>
                       </div>
+                      {/* Show preview of after-save amount if this goal is selected and amount is entered */}
+                      {selectedGoal && selectedGoal.id === goal.id && depositAmount && parseFloat(depositAmount) > 0 && (
+                        <div className="mt-2 text-sm">
+                          <span>Current: ${goal.currentAmount.toLocaleString()} &rarr; </span>
+                          <span className="font-bold text-primary">After Save: ${(goal.currentAmount + parseFloat(depositAmount)).toLocaleString()}</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <Button onClick={handleDeposit} className="w-full" disabled={!depositAmount}>
+              <Button onClick={handleDeposit} className="w-full" disabled={!depositAmount || !selectedGoal}>
                 <PiggyBank className="h-4 w-4 mr-2" />
                 {t('savings.saveAmount', { amount: depositAmount || '0' })}
               </Button>
@@ -361,6 +436,61 @@ const Savings = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Money Dialog */}
+      <Dialog open={showAddMoney} onOpenChange={setShowAddMoney}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('savings.addMoney')}</DialogTitle>
+            <DialogDescription>
+              {selectedGoal && <div className="mb-2 font-medium">{selectedGoal.name}</div>}
+              <Input
+                type="number"
+                placeholder="0.00"
+                value={depositAmount}
+                onChange={e => setDepositAmount(e.target.value)}
+                className="mb-4"
+              />
+              <Button onClick={handleDeposit} disabled={!depositAmount || parseFloat(depositAmount) <= 0}>
+                {t('savings.addMoney')}
+              </Button>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+      {/* Edit Goal Dialog */}
+      <Dialog open={showEditGoal} onOpenChange={setShowEditGoal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('savings.editGoal')}</DialogTitle>
+            <DialogDescription>
+              {editGoalData && (
+                <div className="space-y-3">
+                  <Label>{t('savings.goalName')}</Label>
+                  <Input value={editGoalData.name} onChange={e => setEditGoalData({ ...editGoalData, name: e.target.value })} />
+                  <Label>{t('savings.targetAmount')}</Label>
+                  <Input type="number" value={editGoalData.targetAmount} onChange={e => setEditGoalData({ ...editGoalData, targetAmount: parseFloat(e.target.value) })} />
+                  <Label>{t('savings.category')}</Label>
+                  <Select value={editGoalData.category} onValueChange={value => setEditGoalData({ ...editGoalData, category: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('savings.selectCategory')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="emergency">{t('savings.emergencyFund')}</SelectItem>
+                      <SelectItem value="home">{t('savings.homeProperty')}</SelectItem>
+                      <SelectItem value="education">{t('savings.education')}</SelectItem>
+                      <SelectItem value="business">{t('savings.business')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Label>{t('savings.targetDate')}</Label>
+                  <Input type="date" value={editGoalData.dueDate} onChange={e => setEditGoalData({ ...editGoalData, dueDate: e.target.value })} />
+                  <Button onClick={handleEditGoal}>{t('savings.saveProfileChanges') || 'Save'}</Button>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

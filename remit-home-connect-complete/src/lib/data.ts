@@ -62,6 +62,7 @@ export const sampleUser: User = {
 };
 
 export const countries: Country[] = [
+  { code: 'US', name: 'United States', currency: 'USD', flag: '🇺🇸', exchangeRate: 1 },
   { code: 'PH', name: 'Philippines', currency: 'PHP', flag: '🇵🇭', exchangeRate: 56.25 },
   { code: 'IN', name: 'India', currency: 'INR', flag: '🇮🇳', exchangeRate: 83.12 },
   { code: 'MX', name: 'Mexico', currency: 'MXN', flag: '🇲🇽', exchangeRate: 17.89 },
