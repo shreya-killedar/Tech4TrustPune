@@ -103,15 +103,27 @@ const Savings = () => {
       </div>
 
       {/* Overview Card */}
-      <Card className="bg-warning text-white border-0 shadow-lg">
-        <CardContent className="p-6">
+      <Card
+        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        style={{
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
+        <CardContent className="p-6 text-foreground">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-white/80">Total Saved</p>
-              <h2 className="text-3xl font-bold">${totalSaved.toLocaleString()}</h2>
-              <p className="text-sm text-white/80">of ${totalTarget.toLocaleString()} target</p>
+              <p className="text-sm text-foreground">Total Saved</p>
+              <h2 className="text-3xl font-bold text-foreground">${totalSaved.toLocaleString()}</h2>
+              <p className="text-sm text-foreground">of ${totalTarget.toLocaleString()} target</p>
             </div>
-            <PiggyBank className="h-12 w-12 text-white/80" />
+            <PiggyBank className="h-12 w-12 text-primary" />
           </div>
           
           <div className="space-y-2">

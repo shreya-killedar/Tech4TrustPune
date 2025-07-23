@@ -17,7 +17,7 @@ import {
   Eye,
   EyeOff,
   TrendingUp
-} from 'lucide-react';
+} from 'lucide-react';  
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
@@ -53,13 +53,6 @@ function saveTransaction(userEmail: string, tx: any) {
   localStorage.setItem(key, JSON.stringify(txs));
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-}
-
 function updateUserBalance(email: string, newBalance: number) {
   // Update auth_user
   const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -84,7 +77,6 @@ const Wallet = ({ onNavigate }: WalletProps) => {
   const [tab, setTab] = useState('transactions');
   const [transactions, setTransactions] = useState<any[]>([]);
   const { toast } = useToast();
-  const [managerOpen, setManagerOpen] = useState(false);
   const user = getAuthUser();
   const userEmail = getUserEmail();
   const userCurrency = user.currency || 'USD';
@@ -92,6 +84,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
   const [insurance, setInsurance] = useState(() => JSON.parse(localStorage.getItem(`insurance_${userEmail}`) || '[]'));
   const [savings, setSavings] = useState(() => JSON.parse(localStorage.getItem(`savings_${userEmail}`) || '[]'));
   const navigate = useNavigate();
+  const [selectedTab, setSelectedTab] = useState('transactions');
+  const [managerOpen, setManagerOpen] = useState(false);
 
   // Helper to get balance from localStorage
   function getUserBalance() {
@@ -200,6 +194,13 @@ const Wallet = ({ onNavigate }: WalletProps) => {
   // Only show send/receive/withdraw in wallet
   const walletTransactions = transactions.filter(t => t.type === 'receive' || t.type === 'send' || t.type === 'withdraw');
 
+  function formatCurrency(amount: number) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: userCurrency,
+    }).format(amount);
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -215,151 +216,66 @@ const Wallet = ({ onNavigate }: WalletProps) => {
 
       {/* Wallet Manager Card */}
       <Card
-        className="border-0 shadow-2xl rounded-3xl overflow-hidden relative mb-8"
+        className="rounded-2xl shadow-xl border border-border relative mb-8"
         style={{
-          background: 'linear-gradient(120deg, hsla(var(--primary),0.10) 0%, hsla(var(--secondary),0.08) 100%), hsla(var(--card), 0.90)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-          border: '2px solid hsla(var(--primary),0.12)',
-          boxShadow: '0 8px 32px 0 hsla(var(--primary),0.10)',
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
+          marginBottom: '2rem',
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
+          overflow: 'hidden',
         }}
       >
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
         <CardContent className="p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div>
-            <p className="text-base font-semibold tracking-wide uppercase mb-2" style={{ color: 'hsl(var(--muted-foreground))', letterSpacing: '0.08em' }}>Wallet Manager</p>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>Wallet Manager</p>
             <div className="flex items-center gap-3 mt-1">
-              <p className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg" style={{ color: 'hsl(var(--foreground))', letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.12)' }}>{formatCurrency(balance)}</p>
-              <span className="text-lg font-bold text-primary">{userCurrency}</span>
+              <p className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg text-foreground" style={{ letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.12)' }}>{formatCurrency(balance)}</p>
             </div>
-            <p className="text-muted-foreground mt-2">{userEmail}</p>
           </div>
           <div className="flex flex-col gap-3 items-end">
             <Button
               size="lg"
               variant="default"
               onClick={() => setManagerOpen(true)}
-              className="bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0"
             >
-              View All Wallet Data
+              Wallet Manager
             </Button>
           </div>
         </CardContent>
       </Card>
-      {/* Wallet Manager Modal */}
       <Dialog open={managerOpen} onOpenChange={setManagerOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Wallet Data Manager</DialogTitle>
-            <DialogDescription>View all your wallet-related data in one place.</DialogDescription>
+            <DialogTitle>Wallet History</DialogTitle>
+            <DialogDescription>View all your wallet transactions.</DialogDescription>
           </DialogHeader>
-          <Tabs defaultValue="transactions" className="w-full mt-4">
-            <TabsList className="grid grid-cols-4 mb-4">
-              <TabsTrigger value="transactions">Transactions</TabsTrigger>
-              <TabsTrigger value="recipients">Recipients</TabsTrigger>
-              <TabsTrigger value="insurance">Insurance</TabsTrigger>
-              <TabsTrigger value="savings">Savings</TabsTrigger>
-            </TabsList>
-            <TabsContent value="transactions">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-3 py-2 text-left">Date</th>
-                      <th className="px-3 py-2 text-left">Type</th>
-                      <th className="px-3 py-2 text-left">Amount</th>
-                      <th className="px-3 py-2 text-left">Currency</th>
-                      <th className="px-3 py-2 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((tx, i) => (
-                      <tr key={tx.id || i} className="border-b last:border-b-0">
-                        <td className="px-3 py-2">{tx.date}</td>
-                        <td className="px-3 py-2 capitalize">{tx.type}</td>
-                        <td className="px-3 py-2">{formatCurrency(tx.amount)}</td>
-                        <td className="px-3 py-2">{tx.currency}</td>
-                        <td className="px-3 py-2">{tx.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </TabsContent>
-            <TabsContent value="recipients">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-3 py-2 text-left">Name</th>
-                      <th className="px-3 py-2 text-left">Account</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recipients.map((r, i) => (
-                      <tr key={r.account || i} className="border-b last:border-b-0">
-                        <td className="px-3 py-2">{r.name}</td>
-                        <td className="px-3 py-2">{r.account}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </TabsContent>
-            <TabsContent value="insurance">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-3 py-2 text-left">Name</th>
-                      <th className="px-3 py-2 text-left">Type</th>
-                      <th className="px-3 py-2 text-left">Premium</th>
-                      <th className="px-3 py-2 text-left">Coverage</th>
-                      <th className="px-3 py-2 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {insurance.map((ins, i) => (
-                      <tr key={ins.id || i} className="border-b last:border-b-0">
-                        <td className="px-3 py-2">{ins.name}</td>
-                        <td className="px-3 py-2 capitalize">{ins.type}</td>
-                        <td className="px-3 py-2">{formatCurrency(ins.monthlyPremium)}</td>
-                        <td className="px-3 py-2">{formatCurrency(ins.coverage)}</td>
-                        <td className="px-3 py-2">{ins.isActive ? 'Active' : 'Inactive'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </TabsContent>
-            <TabsContent value="savings">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="px-3 py-2 text-left">Name</th>
-                      <th className="px-3 py-2 text-left">Target</th>
-                      <th className="px-3 py-2 text-left">Current</th>
-                      <th className="px-3 py-2 text-left">Due Date</th>
-                      <th className="px-3 py-2 text-left">Category</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {savings.map((goal, i) => (
-                      <tr key={goal.id || i} className="border-b last:border-b-0">
-                        <td className="px-3 py-2">{goal.name}</td>
-                        <td className="px-3 py-2">{formatCurrency(goal.targetAmount)}</td>
-                        <td className="px-3 py-2">{formatCurrency(goal.currentAmount)}</td>
-                        <td className="px-3 py-2">{goal.dueDate}</td>
-                        <td className="px-3 py-2 capitalize">{goal.category}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </TabsContent>
-          </Tabs>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">Type</th>
+                  <th className="px-3 py-2 text-left">Amount</th>
+                  <th className="px-3 py-2 text-left">Currency</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((tx, i) => (
+                  <tr key={tx.id || i} className="border-b last:border-b-0">
+                    <td className="px-3 py-2">{tx.date}</td>
+                    <td className="px-3 py-2 capitalize">{tx.type}</td>
+                    <td className="px-3 py-2">{formatCurrency(tx.amount)}</td>
+                    <td className="px-3 py-2">{tx.currency}</td>
+                    <td className="px-3 py-2">{tx.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
@@ -368,138 +284,35 @@ const Wallet = ({ onNavigate }: WalletProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Balance Card */}
-      <Card className="bg-gradient-to-r from-primary to-primary-glow text-white border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <p className="text-sm text-white/80 mb-2">Available Balance</p>
-              <div className="flex items-center gap-3">
-                {showBalance ? (
-                  <h2 className="text-4xl font-bold">{userCurrency} {balance.toLocaleString()}</h2>
-                ) : (
-                  <h2 className="text-4xl font-bold">••••••</h2>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="text-white hover:bg-white/10"
-                >
-                  {showBalance ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </Button>
-              </div>
-              <p className="text-sm text-white/80 mt-1">Last updated: Today, {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-            </div>
-            <div className="text-center">
-              <WalletIcon className="h-12 w-12 text-white/80 mx-auto mb-2" />
-              <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                Active
-              </Badge>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="text-sm text-white/80">This Month</p>
-              <div className="flex items-center justify-center gap-1">
-                <TrendingUp className="h-4 w-4 text-white" />
-                <p className="font-bold">+{userCurrency} {thisMonthTotal.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-white/80">Total Sent</p>
-              <p className="font-bold">{userCurrency} {totalSent.toLocaleString()}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Button 
-          onClick={() => onNavigate('send')} 
-          className="h-20 flex-col gap-2 bg-primary hover:bg-primary/90"
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Button
+          onClick={() => setSelectedTab('transactions')}
+          className={`h-20 flex-col gap-2 ${selectedTab === 'transactions' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowUpRight className="h-6 w-6" />
-          <span>Send Money</span>
+          <span>Transactions</span>
         </Button>
-        
-        <Button 
-          variant="outline" 
-          className="h-20 flex-col gap-2"
-          onClick={() => setTab('add-money')}
+        <Button
+          onClick={() => setSelectedTab('add-money')}
+          className={`h-20 flex-col gap-2 ${selectedTab === 'add-money' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <Plus className="h-6 w-6" />
           <span>Add Money</span>
         </Button>
-        
-        <Button 
-          variant="outline" 
-          className="h-20 flex-col gap-2"
-          onClick={() => setTab('withdraw')}
+        <Button
+          onClick={() => setSelectedTab('withdraw')}
+          className={`h-20 flex-col gap-2 ${selectedTab === 'withdraw' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowDownLeft className="h-6 w-6" />
           <span>Withdraw</span>
         </Button>
       </div>
 
-      {/* Wallet Management */}
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="add-money">Add Money</TabsTrigger>
-          <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
-        </TabsList>
+      {/* Panels */}
 
-        {/* Transactions Tab */}
-        <TabsContent value="transactions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {walletTransactions.length === 0 && (
-                  <div className="text-center text-muted-foreground">No transactions yet.</div>
-                )}
-                {walletTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        transaction.type === 'send' ? 'bg-destructive/10' : transaction.type === 'withdraw' ? 'bg-warning/10' : 'bg-success/10'
-                      }`}>
-                        {transaction.type === 'send' ? 
-                          <ArrowUpRight className="h-5 w-5 text-destructive" /> :
-                          transaction.type === 'withdraw' ? <ArrowDownLeft className="h-5 w-5 text-warning" /> :
-                          <ArrowDownLeft className="h-5 w-5 text-success" />
-                        }
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {transaction.type === 'send' ? `Sent to ${transaction.recipient}` :
-                            transaction.type === 'withdraw' ? 'Withdrawal' : 'Money Received'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{transaction.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-bold ${transaction.type === 'send' ? 'text-destructive' : transaction.type === 'withdraw' ? 'text-warning' : 'text-success'}`}>
-                        {transaction.type === 'send' ? '-' : '+'}{userCurrency} {transaction.amount.toLocaleString()}
-                      </p>
-                      <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
-                        {transaction.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Add Money Tab */}
-        <TabsContent value="add-money">
+      {selectedTab === 'add-money' && (
+        <div className="bg-card p-6 rounded-xl shadow">
           <Card>
             <CardHeader>
               <CardTitle>Add Money to Wallet</CardTitle>
@@ -515,10 +328,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   onChange={(e) => setAddAmount(e.target.value)}
                 />
               </div>
-
               <div className="space-y-4">
                 <h3 className="font-medium">Payment Methods</h3>
-                
                 <div className="space-y-3">
                   <div className="p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
                     <div className="flex items-center gap-3">
@@ -530,7 +341,6 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                       <Badge variant="default">Instant</Badge>
                     </div>
                   </div>
-
                   <div className="p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
                     <div className="flex items-center gap-3">
                       <Banknote className="h-6 w-6 text-primary" />
@@ -543,17 +353,16 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   </div>
                 </div>
               </div>
-
               <Button onClick={handleAddMoney} className="w-full" disabled={!addAmount || parseFloat(addAmount) <= 0}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add {userCurrency} {addAmount || '0'} to Wallet
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* Withdraw Tab */}
-        <TabsContent value="withdraw">
+        </div>
+      )}
+      {selectedTab === 'withdraw' && (
+        <div className="bg-card p-6 rounded-xl shadow">
           <Card>
             <CardHeader>
               <CardTitle>Withdraw Money</CardTitle>
@@ -572,10 +381,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   Available balance: {userCurrency} {balance.toLocaleString()}
                 </p>
               </div>
-
               <div className="space-y-4">
                 <h3 className="font-medium">Withdrawal Method</h3>
-                
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <Banknote className="h-6 w-6 text-primary" />
@@ -587,7 +394,6 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   </div>
                 </div>
               </div>
-
               <div className="bg-muted/50 p-4 rounded-lg">
                 <h4 className="font-medium mb-2">Withdrawal Information</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
@@ -597,7 +403,6 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   <li>• Available 24/7</li>
                 </ul>
               </div>
-
               <Button 
                 onClick={handleWithdraw} 
                 className="w-full" 
@@ -608,8 +413,48 @@ const Wallet = ({ onNavigate }: WalletProps) => {
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
+      {selectedTab === 'transactions' && (
+        <div className="bg-card p-6 rounded-xl shadow">
+          <h2 className="text-xl font-bold mb-4">Recent Transactions</h2>
+          <div className="space-y-4">
+            {walletTransactions.length === 0 && (
+              <div className="text-center text-muted-foreground">No transactions yet.</div>
+            )}
+            {walletTransactions.map((transaction) => (
+              <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    transaction.type === 'send' ? 'bg-destructive/10' : transaction.type === 'withdraw' ? 'bg-warning/10' : 'bg-success/10'
+                  }`}>
+                    {transaction.type === 'send' ? 
+                      <ArrowUpRight className="h-5 w-5 text-destructive" /> :
+                      transaction.type === 'withdraw' ? <ArrowDownLeft className="h-5 w-5 text-warning" /> :
+                      <ArrowDownLeft className="h-5 w-5 text-success" />
+                    }
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {transaction.type === 'send' ? `Sent to ${transaction.recipient}` :
+                        transaction.type === 'withdraw' ? 'Withdrawal' : 'Money Received'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={`font-bold ${transaction.type === 'send' ? 'text-destructive' : transaction.type === 'withdraw' ? 'text-warning' : 'text-success'}`}>
+                    {transaction.type === 'send' ? '-' : '+'}{userCurrency} {transaction.amount.toLocaleString()}
+                  </p>
+                  <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
+                    {transaction.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

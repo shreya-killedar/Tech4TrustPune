@@ -338,23 +338,35 @@ const Insurance = () => {
       </div>
 
       {/* Overview Card */}
-      <Card className="bg-success text-white border-0 shadow-lg">
-        <CardContent className="p-6">
+      <Card
+        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        style={{
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
+        <CardContent className="p-6 text-foreground">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-white/80">Total Protection</p>
-              <h2 className="text-3xl font-bold">{formatCurrency(totalCoverage)}</h2>
-              <p className="text-sm text-white/80">Monthly Premium: {formatCurrency(totalMonthlyPremium)}/month</p>
+              <p className="text-sm text-foreground">Total Protection</p>
+              <h2 className="text-3xl font-bold text-foreground">{formatCurrency(totalCoverage)}</h2>
+              <p className="text-sm text-foreground">Monthly Premium: {formatCurrency(totalMonthlyPremium)}/month</p>
             </div>
-            <Shield className="h-12 w-12 text-white/80" />
+            <Shield className="h-12 w-12 text-primary" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <p className="text-sm text-white/80">Active Policies</p>
+              <p className="text-sm text-foreground">Active Policies</p>
               <p className="font-bold text-lg">{policies.filter(i => i.isActive).length}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-white/80">You Save</p>
+              <p className="text-sm text-foreground">You Save</p>
               <p className="font-bold text-lg">{policies.filter(i => i.isActive).length > 1 ? '15%' : '0%'}</p>
             </div>
           </div>

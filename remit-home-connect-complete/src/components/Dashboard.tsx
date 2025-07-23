@@ -127,24 +127,23 @@ const Dashboard = () => {
 
       {/* Balance Card */}
       <Card
-        className="border-0 shadow-2xl rounded-3xl overflow-hidden relative"
+        className="rounded-2xl shadow-xl border border-border relative mb-8"
         style={{
-          background: 'linear-gradient(120deg, hsla(var(--primary),0.12) 0%, hsla(var(--secondary),0.10) 100%), hsla(var(--card), 0.85)',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)',
-          border: '2px solid hsla(var(--primary),0.18)',
-          boxShadow: '0 12px 48px 0 hsla(var(--primary),0.12), 0 2px 8px 0 hsla(var(--secondary),0.10)',
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
           marginBottom: '2rem',
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
+          overflow: 'hidden',
         }}
       >
-        <div className="absolute top-0 left-0 w-full h-2 animate-gradient-x" style={{ background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)), hsl(var(--primary)))', filter: 'blur(0.5px)', opacity: 0.95 }} />
-        <CardContent className="p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
+        <CardContent className="p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-8 text-foreground">
           <div>
-            <p className="text-base font-semibold tracking-wide uppercase mb-2" style={{ color: 'hsl(var(--muted-foreground))', letterSpacing: '0.08em' }}>Total Balance</p>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>Total Balance</p>
             <div className="flex items-center gap-3 mt-1">
-              <p className="text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg" style={{ color: 'hsl(var(--foreground))', letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.18)' }}>{showBalance ? formatCurrency(balance) : '••••••'}</p>
+              <p className="text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg text-foreground" style={{ letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.18)' }}>{showBalance ? formatCurrency(balance) : '••••••'}</p>
               <Button
                 variant="ghost"
                 size="icon"
@@ -155,13 +154,8 @@ const Dashboard = () => {
                 {showBalance ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
               </Button>
             </div>
-            <p className="text-muted-foreground mt-3 text-lg font-medium">Welcome, <span className="font-bold text-primary" style={{ textShadow: '0 1px 8px hsla(var(--primary),0.10)' }}>{userName}</span>!</p>
-            <p className="text-muted-foreground mt-1">Manage your finances with ease.</p>
           </div>
           <div className="flex flex-col gap-4 items-end">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-extrabold text-3xl shadow-2xl border-4 border-white/30" style={{ boxShadow: '0 4px 32px 0 hsla(var(--primary),0.18)' }}>
-              {userName.split(' ').map(n => n[0]).join('')}
-            </div>
             <div className="flex gap-3 mt-3">
               <Button
                 size="lg"
