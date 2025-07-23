@@ -126,7 +126,16 @@ const TopNav = () => {
           </Button>
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto text-black">
-              <div className="p-3 border-b font-semibold">Payment Notifications</div>
+              <div className="flex items-center justify-between p-3 border-b font-semibold">
+                <span>Payment Notifications</span>
+                <button
+                  className="p-1 rounded hover:bg-gray-100 focus:outline-none"
+                  onClick={() => setShowNotifications(false)}
+                  aria-label="Close notifications"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
               {notifications.length === 0 && <div className="p-3 text-muted-foreground">No notifications</div>}
               {notifications.map((tx, idx) => (
                 <div key={tx.id || idx} className="p-3 border-b last:border-b-0">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,6 +65,20 @@ const Savings = () => {
   const [editGoalData, setEditGoalData] = useState<any | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [userBalance, setUserBalance] = useState(() => {
+    const user = getAuthUser();
+    return user.balance || 0;
+  });
+
+  useEffect(() => {
+    // Listen for wallet-balance-updated event to update balance
+    const onWalletUpdate = () => {
+      const user = getAuthUser();
+      setUserBalance(user.balance || 0);
+    };
+    window.addEventListener('wallet-balance-updated', onWalletUpdate);
+    return () => window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+  }, []);
 
   const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
   const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
@@ -103,6 +117,16 @@ const Savings = () => {
       if (amt > 0) {
         const updated = goals.map(g => g.id === selectedGoal.id ? { ...g, currentAmount: g.currentAmount + amt } : g);
         updateGoals(updated);
+        // Deduct from user balance in localStorage
+        const user = getAuthUser();
+        if (user && user.email) {
+          const newBalance = (user.balance || 0) - amt;
+          const updatedUser = { ...user, balance: newBalance };
+          localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+          setUserBalance(newBalance);
+          // Dispatch custom event for real-time sync
+          window.dispatchEvent(new Event('wallet-balance-updated'));
+        }
         toast({
           title: 'Money Saved!',
           description: `$${amt} added to your savings goal "${selectedGoal.name}"`,
@@ -282,6 +306,9 @@ const Savings = () => {
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
                 />
+                <div className="text-sm text-muted-foreground mt-1">
+                  {t('wallet.availableBalance')}: ${userBalance.toLocaleString()}
+                </div>
               </div>
 
               <div className="space-y-4">
