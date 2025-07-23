@@ -86,6 +86,7 @@ const resources = {
         withdrawal: 'Withdrawal',
       },
       transactions: {
+        transactionHistory: 'Transaction History',
         type: 'Type',
         amount: 'Amount',
         toFrom: 'To/From',
@@ -97,6 +98,10 @@ const resources = {
         receive: 'Receive',
         withdraw: 'Withdraw',
         save: 'Save',
+        transactionSummary: 'Transaction Summary',
+        fee: 'Fee',
+        exchangeRate: 'Exchange Rate',
+        recipientCountry: 'Recipient Country'
       },
       faq: {
         title: 'Frequently Asked Questions',
