@@ -24,7 +24,10 @@ const Index = () => {
       {/* Top Bar */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-background/80 backdrop-blur shadow-sm sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <span className="text-2xl font-bold text-primary tracking-tight">Tech4Trust</span>
+          <span className="flex items-center gap-2">
+            <img src="/favicon.ico" alt="CashBridge logo" className="w-7 h-7 rounded-full" />
+            <span className="text-2xl font-bold text-primary tracking-tight">CashBridge</span>
+          </span>
         </div>
         <div className="flex items-center gap-4">
           {/* Theme Switcher */}
@@ -56,7 +59,10 @@ const Index = () => {
       }}>
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
         <div className="relative z-20 max-w-2xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4 drop-shadow-xl" style={{textShadow: '0 2px 16px rgba(0,0,0,0.35)'}}>Welcome to Tech4Trust</h1>
+          <span className="flex items-center justify-center gap-3 mb-4">
+            <img src="/favicon.ico" alt="CashBridge logo" className="w-10 h-10 rounded-full" />
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white drop-shadow-xl" style={{textShadow: '0 2px 16px rgba(0,0,0,0.35)'}}>Welcome to CashBridge</h1>
+          </span>
           <p className="text-lg md:text-xl text-white/90 mb-6 font-medium drop-shadow" style={{textShadow: '0 2px 12px rgba(0,0,0,0.25)'}}>
             The all-in-one platform to manage your finances, send money, save for goals, and protect your future with insurance. Enjoy a seamless, secure, and beautiful experience—anywhere, anytime.
           </p>
@@ -100,9 +106,12 @@ const Index = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-card rounded-xl shadow-lg p-6 relative w-full max-w-lg mx-auto">
             <button className="absolute top-2 right-2 text-xl text-muted-foreground hover:text-primary" onClick={() => setShowHelp(false)}>&times;</button>
-            <h2 className="text-2xl font-bold mb-2 text-primary">About Tech4Trust</h2>
+            <span className="flex items-center gap-2 mb-2">
+              <img src="/favicon.ico" alt="CashBridge logo" className="w-7 h-7 rounded-full" />
+              <h2 className="text-2xl font-bold text-primary">About CashBridge</h2>
+            </span>
             <p className="mb-4 text-muted-foreground">
-              Tech4Trust is your one-stop solution for digital finance: send money, manage your wallet, save for your dreams, and secure your future with insurance. Designed for speed, security, and a delightful user experience.
+              CashBridge is your one-stop solution for digital finance: send money, manage your wallet, save for your dreams, and secure your future with insurance. Designed for speed, security, and a delightful user experience.
             </p>
             <ul className="list-disc pl-5 space-y-1 text-foreground mb-4">
               <li>Send and receive money instantly</li>
@@ -112,7 +121,7 @@ const Index = () => {
               <li>Modern, responsive, and theme-aware UI</li>
             </ul>
             <div className="text-center">
-              <span className="text-muted-foreground">Need more help? Contact support@tech4trust.com</span>
+              <span className="text-muted-foreground">Need more help? Contact support@cashbridge.com</span>
             </div>
           </div>
         </div>
