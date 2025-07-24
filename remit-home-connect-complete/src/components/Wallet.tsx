@@ -226,22 +226,17 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       </div>
 
       {/* Wallet Manager Card */}
-      <Card
-        className="rounded-2xl shadow-xl border border-border relative mb-8"
+      <div
+        className="rounded-2xl shadow-lg border border-border relative transition-all hover:shadow-2xl focus-within:ring-2 focus-within:ring-primary/60 mb-8"
         style={{
           background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
-          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
-          borderRadius: '1.25rem',
-          marginBottom: '2rem',
-          position: 'relative',
-          zIndex: 1,
           overflow: 'hidden',
         }}
       >
         <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
         <CardContent className="p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div>
-            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>Wallet Manager</p>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>{t('wallet.walletManager')}</p>
             <div className="flex items-center gap-3 mt-1">
               <p className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg text-foreground" style={{ letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.12)' }}>{formatCurrency(balance)}</p>
             </div>
@@ -252,11 +247,11 @@ const Wallet = ({ onNavigate }: WalletProps) => {
               variant="default"
               onClick={() => setManagerOpen(true)}
             >
-              Wallet Manager
+              {t('wallet.walletManager')}
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
       <Dialog open={managerOpen} onOpenChange={setManagerOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -299,21 +294,21 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Button
           onClick={() => setSelectedTab('transactions')}
-          className={`h-20 flex-col gap-2 ${selectedTab === 'transactions' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
+          className={`h-20 flex-col gap-2 rounded-xl shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/60 ${selectedTab === 'transactions' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowUpRight className="h-6 w-6" />
-          <span>Transactions</span>
+          <span>{t('wallet.transactions')}</span>
         </Button>
         <Button
           onClick={() => setSelectedTab('add-money')}
-          className={`h-20 flex-col gap-2 ${selectedTab === 'add-money' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
+          className={`h-20 flex-col gap-2 rounded-xl shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/60 ${selectedTab === 'add-money' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <Plus className="h-6 w-6" />
           <span>{t('wallet.addMoney')}</span>
         </Button>
         <Button
           onClick={() => setSelectedTab('withdraw')}
-          className={`h-20 flex-col gap-2 ${selectedTab === 'withdraw' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
+          className={`h-20 flex-col gap-2 rounded-xl shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/60 ${selectedTab === 'withdraw' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowDownLeft className="h-6 w-6" />
           <span>{t('wallet.withdraw')}</span>
@@ -428,13 +423,13 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       )}
       {selectedTab === 'transactions' && (
         <div className="bg-card p-6 rounded-xl shadow">
-          <h2 className="text-xl font-bold mb-4">Recent Transactions</h2>
+          <h2 className="text-xl font-bold mb-4">{t('wallet.recentTransactions')}</h2>
           <div className="space-y-4">
             {walletTransactions.length === 0 && (
-              <div className="text-center text-muted-foreground">No transactions yet.</div>
+              <div className="text-center text-muted-foreground">{t('wallet.noTransactions')}</div>
             )}
             {walletTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border">
+              <div key={transaction.id} className="flex items-center justify-between p-4 rounded-xl border shadow-sm transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-primary/60">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     transaction.type === 'send' ? 'bg-destructive/10' : transaction.type === 'withdraw' ? 'bg-warning/10' : 'bg-success/10'

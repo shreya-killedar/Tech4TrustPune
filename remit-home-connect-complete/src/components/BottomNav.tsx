@@ -1,15 +1,17 @@
 import { Home, Send, Wallet, PiggyBank, Shield, Settings as SettingsIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const BottomNav = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const navItems = [
-    { id: 'dashboard', label: 'Home', icon: Home, path: '/dashboard' },
-    { id: 'send', label: 'Send', icon: Send, path: '/dashboard/send' },
-    { id: 'wallet', label: 'Wallet', icon: Wallet, path: '/dashboard/wallet' },
-    { id: 'savings', label: 'Savings', icon: PiggyBank, path: '/dashboard/savings' },
-    { id: 'insurance', label: 'Insurance', icon: Shield, path: '/dashboard/insurance' },
-    { id: 'settings', label: 'Settings', icon: SettingsIcon, path: '/dashboard/settings' }
+    { id: 'dashboard', label: t('dashboard.home'), icon: Home, path: '/dashboard' },
+    { id: 'send', label: t('dashboard.send'), icon: Send, path: '/dashboard/send' },
+    { id: 'wallet', label: t('dashboard.wallet'), icon: Wallet, path: '/dashboard/wallet' },
+    { id: 'savings', label: t('dashboard.savings'), icon: PiggyBank, path: '/dashboard/savings' },
+    { id: 'insurance', label: t('dashboard.insurance'), icon: Shield, path: '/dashboard/insurance' },
+    { id: 'settings', label: t('dashboard.settings'), icon: SettingsIcon, path: '/dashboard/settings' }
   ];
 
   return (

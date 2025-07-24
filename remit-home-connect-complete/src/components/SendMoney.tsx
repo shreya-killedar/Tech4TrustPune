@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Send, ArrowLeft, CreditCard, Banknote, Clock, Shield, CheckCircle } from 'lucide-react';
-import { countries, exchangeRates } from '@/lib/data';
+import { Send, ArrowLeft, CreditCard, Banknote, Clock, Shield, CheckCircle, PiggyBank } from 'lucide-react';
+import { countries, exchangeRates, savingsGoals as sampleSavingsGoals } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +48,23 @@ const SendMoney = () => {
     }
   });
 
+  // Savings and Insurance funds
+  const [savingsGoals, setSavingsGoals] = useState<any[]>([]);
+  const [insuranceFunds, setInsuranceFunds] = useState<any[]>([]);
+
+  // Load savings and insurance funds
+  const loadFunds = useCallback(() => {
+    if (user.email) {
+      let goals = JSON.parse(localStorage.getItem(`savingsGoals_${user.email}`) || 'null');
+      if (!goals || !Array.isArray(goals) || goals.length === 0) {
+        goals = sampleSavingsGoals;
+      }
+      setSavingsGoals(goals);
+      const insurance = JSON.parse(localStorage.getItem(`insurance_${user.email}`) || '[]');
+      setInsuranceFunds(insurance.filter((i: any) => i.isActive));
+    }
+  }, [user.email]);
+
   useEffect(() => {
     if (user.email) {
       setRecipients(getRecipients(user.email));
@@ -73,6 +90,18 @@ const SendMoney = () => {
       window.removeEventListener('currency-changed', onCurrencyChanged);
     };
   }, [user.email]);
+
+  useEffect(() => {
+    loadFunds();
+    window.addEventListener('wallet-balance-updated', loadFunds);
+    window.addEventListener('insurance-updated', loadFunds);
+    window.addEventListener('storage', loadFunds);
+    return () => {
+      window.removeEventListener('wallet-balance-updated', loadFunds);
+      window.removeEventListener('insurance-updated', loadFunds);
+      window.removeEventListener('storage', loadFunds);
+    };
+  }, [loadFunds]);
 
   // Helper to get exchange rate from userCurrency to destCurrency
   function getExchangeRate(from: string, to: string): number {
@@ -119,38 +148,116 @@ const SendMoney = () => {
 
   const handleSend = () => {
     const now = new Date();
-    saveTransaction(user.email, {
-      id: Date.now(),
-      type: 'send',
-      amount: parseFloat(formData.amount),
-      currency: userCurrency,
-      recipient: formData.recipient,
-      recipientCountry: selectedCountry?.name,
-      status: 'completed',
-      date: now.toISOString().slice(0, 10),
-      fee: transferFee,
-      exchangeRate: exchangeRate
-    });
-    // Deduct from user balance in localStorage and update users array
-    const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
-    const newBalance = (authUser.balance || 0) - totalAmount;
-    // Update auth_user
-    if (authUser.email === user.email) {
-      authUser.balance = newBalance;
-      localStorage.setItem('auth_user', JSON.stringify(authUser));
+    const amount = parseFloat(formData.amount);
+    let paymentSource = formData.paymentMethod;
+    let success = false;
+    // Deduct from correct source
+    if (paymentSource === 'wallet') {
+      // Deduct from wallet
+      saveTransaction(user.email, {
+        id: Date.now(),
+        type: 'send',
+        amount,
+        currency: userCurrency,
+        recipient: formData.recipient,
+        recipientCountry: selectedCountry?.name,
+        status: 'completed',
+        date: now.toISOString().slice(0, 10),
+        fee: transferFee,
+        exchangeRate: exchangeRate
+      });
+      const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+      const newBalance = (authUser.balance || 0) - totalAmount;
+      if (authUser.email === user.email) {
+        authUser.balance = newBalance;
+        localStorage.setItem('auth_user', JSON.stringify(authUser));
+      }
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const idx = users.findIndex((u: any) => u.email === user.email);
+      if (idx !== -1) {
+        users[idx].balance = newBalance;
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+      window.dispatchEvent(new Event('wallet-balance-updated'));
+      success = true;
+    } else if (paymentSource === 'bank') {
+      // Simulate bank transfer (no deduction)
+      saveTransaction(user.email, {
+        id: Date.now(),
+        type: 'send',
+        amount,
+        currency: userCurrency,
+        recipient: formData.recipient,
+        recipientCountry: selectedCountry?.name,
+        status: 'completed',
+        date: now.toISOString().slice(0, 10),
+        fee: transferFee,
+        exchangeRate: exchangeRate
+      });
+      success = true;
+    } else if (paymentSource.startsWith('savings-')) {
+      // Deduct from savings goal
+      const goalId = paymentSource.replace('savings-', '');
+      const goals = JSON.parse(localStorage.getItem(`savingsGoals_${user.email}`) || '[]');
+      const goalIdx = goals.findIndex((g: any) => g.id === goalId);
+      if (goalIdx !== -1 && goals[goalIdx].currentAmount >= totalAmount) {
+        goals[goalIdx].currentAmount -= totalAmount;
+        localStorage.setItem(`savingsGoals_${user.email}`, JSON.stringify(goals));
+        saveTransaction(user.email, {
+          id: Date.now(),
+          type: 'send',
+          amount,
+          currency: userCurrency,
+          recipient: formData.recipient,
+          recipientCountry: selectedCountry?.name,
+          status: 'completed',
+          date: now.toISOString().slice(0, 10),
+          fee: transferFee,
+          exchangeRate: exchangeRate,
+          source: `savings-${goalId}`
+        });
+        window.dispatchEvent(new Event('wallet-balance-updated'));
+        success = true;
+      }
+    } else if (paymentSource.startsWith('insurance-')) {
+      // Deduct from insurance fund (coverage)
+      const policyId = paymentSource.replace('insurance-', '');
+      const policies = JSON.parse(localStorage.getItem(`insurance_${user.email}`) || '[]');
+      const policyIdx = policies.findIndex((p: any) => p.id === policyId);
+      if (policyIdx !== -1 && policies[policyIdx].coverage >= totalAmount) {
+        policies[policyIdx].coverage -= totalAmount;
+        localStorage.setItem(`insurance_${user.email}`, JSON.stringify(policies));
+        saveTransaction(user.email, {
+          id: Date.now(),
+          type: 'send',
+          amount,
+          currency: userCurrency,
+          recipient: formData.recipient,
+          recipientCountry: selectedCountry?.name,
+          status: 'completed',
+          date: now.toISOString().slice(0, 10),
+          fee: transferFee,
+          exchangeRate: exchangeRate,
+          source: `insurance-${policyId}`
+        });
+        window.dispatchEvent(new Event('insurance-updated'));
+        success = true;
+      }
     }
-    // Update users array
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const idx = users.findIndex((u: any) => u.email === user.email);
-    if (idx !== -1) {
-      users[idx].balance = newBalance;
-      localStorage.setItem('users', JSON.stringify(users));
+    if (success) {
+      toast({
+        title: t('sendMoney.moneySentSuccess'),
+        description: `${userCurrency} ${formData.amount} ${t('sendMoney.sentTo')} ${formData.recipient} ${t('sendMoney.in')} ${selectedCountry?.name}`,
+      });
+      setStep(1);
+      setFormData({ recipient: '', country: '', amount: '', purpose: '', paymentMethod: '' });
+    } else {
+      toast({
+        title: t('sendMoney.insufficientFunds'),
+        description: t('sendMoney.notEnoughFunds'),
+        variant: 'destructive',
+      });
     }
-    toast({
-      title: t('sendMoney.moneySentSuccess'),
-      description: `${userCurrency} ${formData.amount} ${t('sendMoney.sentTo')} ${formData.recipient} ${t('sendMoney.in')} ${selectedCountry?.name}`,
-    });
-    navigate('/dashboard');
   };
 
   const handleAddRecipient = () => {
@@ -314,6 +421,7 @@ const SendMoney = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
+              {/* Wallet */}
               <div 
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
                   formData.paymentMethod === 'wallet' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
@@ -329,7 +437,7 @@ const SendMoney = () => {
                   <Badge variant="default">{t('sendMoney.instant')}</Badge>
                 </div>
               </div>
-
+              {/* Bank */}
               <div 
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
                   formData.paymentMethod === 'bank' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
@@ -345,6 +453,24 @@ const SendMoney = () => {
                   <Badge variant="secondary">{t('sendMoney.bankTransfer')}</Badge>
                 </div>
               </div>
+              {/* Savings Funds */}
+              {savingsGoals.map((goal) => (
+                <div
+                  key={goal.id}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${formData.paymentMethod === `savings-${goal.id}` ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  onClick={() => setFormData({...formData, paymentMethod: `savings-${goal.id}`})}
+                >
+                  <div className="flex items-center gap-3">
+                    <PiggyBank className="h-6 w-6 text-primary" />
+                    <div className="flex-1">
+                      <p className="font-medium">{goal.name} (Savings Fund)</p>
+                      <p className="text-sm text-muted-foreground">Available: {userCurrency} {goal.currentAmount.toLocaleString()}</p>
+                    </div>
+                    <Badge variant="secondary">Instant</Badge>
+                  </div>
+                </div>
+              ))}
+              {/* Insurance Funds removed as per user request */}
             </div>
 
             <div className="flex gap-2">

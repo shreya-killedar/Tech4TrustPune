@@ -1,57 +1,130 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HelpCircle, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const QUESTIONS = [
   {
-    question: 'How do I send money?',
-    buttonLabel: 'Go to Send Money',
+    question: 'chatbotQuestions.q1',
+    buttonLabel: 'chatbotAnswers.b1',
     path: '/dashboard/send',
   },
   {
-    question: 'How can I view my transactions?',
-    buttonLabel: 'View Transactions',
+    question: 'chatbotQuestions.q2',
+    buttonLabel: 'chatbotAnswers.b2',
     path: '/dashboard/transactions',
   },
   {
-    question: 'How do I update my profile?',
-    buttonLabel: 'Update Profile',
+    question: 'chatbotQuestions.q3',
+    buttonLabel: 'chatbotAnswers.b3',
     path: '/dashboard/settings',
   },
   {
-    question: 'How do I check my savings?',
-    buttonLabel: 'Check Savings',
+    question: 'chatbotQuestions.q4',
+    buttonLabel: 'chatbotAnswers.b4',
     path: '/dashboard/savings',
   },
   {
-    question: 'How do I contact support?',
-    buttonLabel: 'Contact Support',
-    path: '/dashboard/settings', // No support route, using settings as placeholder
+    question: 'chatbotQuestions.q5',
+    buttonLabel: 'chatbotAnswers.b5',
+    path: 'mailto:support@cashbridge.com',
+    isMail: true,
   },
   {
-    question: 'How do I view FAQs?',
-    buttonLabel: 'View FAQs',
-    path: '/dashboard', // No FAQ route, using dashboard as placeholder
+    question: 'chatbotQuestions.q6',
+    buttonLabel: 'chatbotAnswers.b6',
+    isFAQ: true,
   },
 ];
 
 const ChatBot = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<number | null>(null);
+  // Show FAQ button if FAQ question is selected
+  const showFAQButton =
+    selectedQuestion !== null &&
+    QUESTIONS[selectedQuestion].question.toLowerCase().includes('faq');
 
   return (
     <>
+      <style>
+        {`
+          @keyframes chatbot-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(59,130,246,0); }
+            100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+          }
+          @keyframes askme-fade {
+            0% { opacity: 0; transform: translateY(-20px) scale(0.9); }
+            30% { opacity: 1; transform: translateY(-32px) scale(1.1); }
+            70% { opacity: 1; transform: translateY(-32px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-44px) scale(0.9); }
+          }
+          .askme-animate {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 100%;
+            margin-bottom: 10px;
+            background: rgba(30,41,59,0.85); /* dark blue for contrast in light mode */
+            color: #fff;
+            backdrop-filter: blur(6px) saturate(1.2);
+            -webkit-backdrop-filter: blur(6px) saturate(1.2);
+            padding: 4px 16px;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: 'Quicksand', 'Segoe UI', 'Inter', 'Arial', sans-serif;
+            letter-spacing: 0.03em;
+            pointer-events: none;
+            border: 1px solid rgba(0,0,0,0.10);
+            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10), 0 1.5px 6px 0 rgba(6,182,212,0.08);
+            animation: askme-fade 1.5s infinite, askme-float 2.5s ease-in-out infinite;
+            z-index: 100;
+            text-shadow: 0 2px 8px rgba(59,130,246,0.10), 0 1px 2px rgba(0,0,0,0.10);
+            overflow: hidden;
+            transition: background 0.3s, box-shadow 0.3s, color 0.3s;
+          }
+          html.dark .askme-animate {
+            background: rgba(255,255,255,0.92); /* light background for dark mode */
+            color: #1e293b; /* dark text for dark mode */
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px 0 rgba(255,255,255,0.10), 0 1.5px 6px 0 rgba(6,182,212,0.08);
+            text-shadow: 0 2px 8px rgba(255,255,255,0.10), 0 1px 2px rgba(0,0,0,0.10);
+          }
+          .askme-animate .shimmer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(120deg, transparent 0%, #3b82f6 40%, #06b6d4 60%, transparent 100%);
+            opacity: 0.25;
+            filter: blur(2px);
+            animation: shimmer-move 1.5s infinite;
+            pointer-events: none;
+          }
+          @keyframes shimmer-move {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          @keyframes askme-float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+          }
+        `}
+      </style>
       {/* Floating Chat Button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-xl bg-gradient-to-br from-blue-600 to-blue-400 text-white font-semibold text-lg backdrop-blur-md border border-white/20 hover:scale-105 transition-all"
-        style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-xl bg-transparent border-none hover:scale-105 transition-all chatbot-pulse-btn group"
+        style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)', padding: 0, width: '80px', height: '80px', animation: 'chatbot-pulse 1.5s infinite' }}
         aria-label="Open AI ChatBot"
       >
-        <HelpCircle className="w-6 h-6 mr-1" />
-        {t('chatbot.title')}
+        <span className="askme-animate" style={{position:'absolute'}}>
+          <span style={{position:'relative',zIndex:2}}>Ask me</span>
+          <span className="shimmer"></span>
+        </span>
+        <img src="/favicon.ico" alt="ChatBot logo" className="w-16 h-16 rounded-full bg-white" />
       </button>
       {/* Chat Modal */}
       {open && (
@@ -60,7 +133,7 @@ const ChatBot = () => {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 bg-gradient-to-r from-blue-600 to-blue-400 text-white">
               <div className="flex items-center gap-2">
-                <HelpCircle className="w-5 h-5" />
+                <img src="/favicon.ico" alt="ChatBot logo" className="w-8 h-8 rounded-full bg-white" />
                 <span className="font-bold text-lg">{t('chatbot.title')}</span>
               </div>
               <button onClick={() => { setOpen(false); setSelectedQuestion(null); }} className="p-1 rounded hover:bg-white/20 transition" aria-label="Close chatbot">
@@ -81,7 +154,7 @@ const ChatBot = () => {
                           className="w-full text-left px-4 py-3 rounded-xl bg-blue-100 dark:bg-blue-800 text-blue-900 dark:text-blue-100 font-medium shadow hover:bg-blue-200 dark:hover:bg-blue-700 transition"
                           onClick={() => setSelectedQuestion(idx)}
                         >
-                          {q.question}
+                          {t(q.question)}
                         </button>
                       </li>
                     ))}
@@ -104,15 +177,36 @@ const ChatBot = () => {
                     </button>
                   </div>
                   <div className="text-blue-900 dark:text-blue-100 text-lg font-semibold mb-6 text-center">
-                    {QUESTIONS[selectedQuestion].question}
+                    {t(QUESTIONS[selectedQuestion].question)}
                   </div>
-                  <Link
-                    to={QUESTIONS[selectedQuestion].path}
-                    className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
-                    onClick={() => setOpen(false)}
-                  >
-                    {QUESTIONS[selectedQuestion].buttonLabel}
-                  </Link>
+                  {/* FAQ: show only one button that navigates to FAQ page */}
+                  {QUESTIONS[selectedQuestion].isFAQ ? (
+                    <button
+                      className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
+                      onClick={() => {
+                        setOpen(false);
+                        navigate('/dashboard/faq');
+                      }}
+                    >
+                      View FAQ
+                    </button>
+                  ) : QUESTIONS[selectedQuestion].isMail ? (
+                    <a
+                      href={QUESTIONS[selectedQuestion].path}
+                      className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
+                      onClick={() => setOpen(false)}
+                    >
+                      {t(QUESTIONS[selectedQuestion].buttonLabel)}
+                    </a>
+                  ) : (
+                    <Link
+                      to={QUESTIONS[selectedQuestion].path}
+                      className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
+                      onClick={() => setOpen(false)}
+                    >
+                      {t(QUESTIONS[selectedQuestion].buttonLabel)}
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

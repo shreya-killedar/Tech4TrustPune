@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,8 @@ const TopNav = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const navigate = useNavigate();
   const user = getAuthUser();
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileBtnRef = useRef(null);
 
   useEffect(() => {
     setSelectedLanguage(user.language || 'en');
@@ -82,25 +84,27 @@ const TopNav = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('auth_user');
+    navigate('/login');
+  };
   return (
     <nav className="hidden md:flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-50">
       {/* Logo */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-white font-bold text-sm">RC</span>
-        </div>
-        <h1 className="text-xl font-bold text-primary">Tech4Trust</h1>
+        <img src="/favicon.ico" alt="CashBridge logo" className="w-8 h-8 rounded-lg" />
+        <h1 className="text-xl font-bold text-primary">CashBridge</h1>
       </div>
 
       {/* Navigation Links */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 relative">
         {[
           { id: 'dashboard', label: t('dashboard.dashboard'), path: '/dashboard' },
           { id: 'send', label: t('dashboard.sendMoney'), path: '/dashboard/send' },
           { id: 'wallet', label: t('dashboard.wallet'), path: '/dashboard/wallet' },
           { id: 'savings', label: t('dashboard.savings'), path: '/dashboard/savings' },
           { id: 'insurance', label: t('dashboard.insurance'), path: '/dashboard/insurance' },
-          { id: 'settings', label: t('dashboard.settings'), path: '/dashboard/settings' }
+          { id: 'faq', label: 'FAQ', path: '/dashboard/faq' },
         ].map((item) => (
           <Button
             key={item.id}
@@ -157,7 +161,17 @@ const TopNav = () => {
             )}
           </Button>
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto text-black">
+            <div
+              className="absolute right-0 mt-2 w-96 rounded-xl border shadow-xl z-50 max-h-96 overflow-y-auto"
+              style={{
+                background: 'hsl(var(--card))',
+                color: 'hsl(var(--card-foreground))',
+                borderColor: 'hsl(var(--border))',
+                boxShadow: '0 8px 32px 0 hsl(var(--shadow-card, 217 91% 60% / 0.10))',
+                transition: 'all 0.2s cubic-bezier(.4,0,.2,1)'
+              }}
+            >
+           
               <div className="flex items-center justify-between p-3 border-b font-semibold">
                 <span>Payment Notifications</span>
                 <button
@@ -201,19 +215,35 @@ const TopNav = () => {
             </div>
           )}
         </div>
-
-        {/* Profile */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/dashboard/settings')}
-          className="flex items-center gap-2"
-        >
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-sm font-medium">
-            {userInitial}
-          </div>
-          <span className="text-sm font-medium">{user.name?.split(' ')[0]}</span>
-        </Button>
+        {/* Profile menu (avatar with dropdown) */}
+        <div className="relative ml-4">
+          <button
+            ref={profileBtnRef}
+            onClick={() => setProfileMenuOpen((v) => !v)}
+            className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+            aria-label="Open profile menu"
+          >
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-sm font-medium">
+              {userInitial}
+            </div>
+          </button>
+          {profileMenuOpen && (
+            <div className="absolute right-0 top-12 bg-white dark:bg-zinc-900 border border-border rounded-lg shadow-lg py-2 w-40 z-50 animate-fadeIn" style={{minWidth: '140px'}}>
+              <button
+                className="w-full text-left px-4 py-2 hover:bg-muted transition text-foreground"
+                onClick={() => { setProfileMenuOpen(false); navigate('/dashboard/settings'); }}
+              >
+                Settings
+              </button>
+              <button
+                className="w-full text-left px-4 py-2 hover:bg-muted transition text-foreground"
+                onClick={() => { setProfileMenuOpen(false); handleLogout(); }}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
