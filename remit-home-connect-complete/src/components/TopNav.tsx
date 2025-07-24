@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Globe, Menu, X } from 'lucide-react';
+import { Bell, Globe, Menu, X, Sun, Moon } from 'lucide-react';
 import { languages } from '@/lib/data';
 import { useNavigate } from 'react-router-dom';
+import i18n from '../i18n';
+import { useTranslation } from 'react-i18next';
 
 function getAuthUser() {
   return JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -14,11 +16,18 @@ function getUserTransactions(email: string) {
   return JSON.parse(localStorage.getItem(`transactions_${email}`) || '[]');
 }
 
+function getUserNotifications(email: string) {
+  return JSON.parse(localStorage.getItem(`notifications_${email}`) || '[]');
+}
+
 const TopNav = () => {
+  const { t } = useTranslation();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [insuranceNotifications, setInsuranceNotifications] = useState(() => getUserNotifications(getAuthUser().email || 'guest'));
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const navigate = useNavigate();
   const user = getAuthUser();
 
@@ -27,6 +36,7 @@ const TopNav = () => {
     if (user.email) {
       const txs = getUserTransactions(user.email);
       setNotifications(txs.filter((tx: any) => tx.type === 'send' || tx.type === 'receive'));
+      setInsuranceNotifications(getUserNotifications(user.email));
     }
     // Listen for wallet-balance-updated event for real-time sync
     const onWalletUpdate = () => {
@@ -35,14 +45,42 @@ const TopNav = () => {
       if (updatedUser.email) {
         const txs = getUserTransactions(updatedUser.email);
         setNotifications(txs.filter((tx: any) => tx.type === 'send' || tx.type === 'receive'));
+        setInsuranceNotifications(getUserNotifications(updatedUser.email));
       }
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
-    return () => window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for insurance notifications
+    const onNotifUpdate = () => {
+      setInsuranceNotifications(getUserNotifications(user.email));
+    };
+    window.addEventListener('notifications-updated', onNotifUpdate);
+    return () => {
+      window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('notifications-updated', onNotifUpdate);
+    };
   }, [user.email, user.language]);
+
+  useEffect(() => {
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const currentLanguage = languages.find(lang => lang.code === selectedLanguage);
   const userInitial = user.name ? user.name[0].toUpperCase() : '?';
+
+  const handleLanguageChange = (lang: string) => {
+    setSelectedLanguage(lang);
+    i18n.changeLanguage(lang);
+    // Update user language in localStorage
+    const user = getAuthUser();
+    if (user && user.email) {
+      const updatedUser = { ...user, language: lang };
+      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      // Optionally, trigger a reload or event if you want to update everywhere
+      window.dispatchEvent(new Event('wallet-balance-updated'));
+    }
+  };
 
   return (
     <nav className="hidden md:flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-50">
@@ -51,18 +89,18 @@ const TopNav = () => {
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
           <span className="text-white font-bold text-sm">RC</span>
         </div>
-        <h1 className="text-xl font-bold text-primary">RemitConnect</h1>
+        <h1 className="text-xl font-bold text-primary">Tech4Trust</h1>
       </div>
 
       {/* Navigation Links */}
       <div className="flex items-center gap-1">
         {[
-          { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
-          { id: 'send', label: 'Send Money', path: '/dashboard/send' },
-          { id: 'wallet', label: 'Wallet', path: '/dashboard/wallet' },
-          { id: 'savings', label: 'Savings', path: '/dashboard/savings' },
-          { id: 'insurance', label: 'Insurance', path: '/dashboard/insurance' },
-          { id: 'settings', label: 'Settings', path: '/dashboard/settings' }
+          { id: 'dashboard', label: t('dashboard.dashboard'), path: '/dashboard' },
+          { id: 'send', label: t('dashboard.sendMoney'), path: '/dashboard/send' },
+          { id: 'wallet', label: t('dashboard.wallet'), path: '/dashboard/wallet' },
+          { id: 'savings', label: t('dashboard.savings'), path: '/dashboard/savings' },
+          { id: 'insurance', label: t('dashboard.insurance'), path: '/dashboard/insurance' },
+          { id: 'settings', label: t('dashboard.settings'), path: '/dashboard/settings' }
         ].map((item) => (
           <Button
             key={item.id}
@@ -78,8 +116,18 @@ const TopNav = () => {
 
       {/* Right Actions */}
       <div className="flex items-center gap-3 relative">
-        {/* Language Selector */}
-        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Toggle theme"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="rounded-full hover:bg-primary/10 transition-colors"
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
+
+         <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
           <SelectTrigger className="w-32">
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
@@ -97,25 +145,57 @@ const TopNav = () => {
             ))}
           </SelectContent>
         </Select>
-
+        
         {/* Notifications */}
         <div className="relative">
           <Button variant="ghost" size="sm" className="relative" onClick={() => setShowNotifications(v => !v)}>
             <Bell className="h-5 w-5" />
-            {notifications.length > 0 && (
+            {(notifications.length > 0 || insuranceNotifications.length > 0) && (
               <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs">
-                {notifications.length}
+                {notifications.length + insuranceNotifications.length}
               </Badge>
             )}
           </Button>
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto text-black">
-              <div className="p-3 border-b font-semibold">Payment Notifications</div>
-              {notifications.length === 0 && <div className="p-3 text-muted-foreground">No notifications</div>}
+              <div className="flex items-center justify-between p-3 border-b font-semibold">
+                <span>Payment Notifications</span>
+                <button
+                  className="p-1 rounded hover:bg-gray-100 focus:outline-none"
+                  onClick={() => setShowNotifications(false)}
+                  aria-label="Close notifications"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              {notifications.length === 0 && insuranceNotifications.length === 0 && (
+                <div className="p-3 text-muted-foreground">No notifications</div>
+              )}
               {notifications.map((tx, idx) => (
-                <div key={tx.id || idx} className="p-3 border-b last:border-b-0">
-                  <div className="font-medium capitalize">{tx.type === 'send' ? `Sent to ${tx.recipient}` : `Received`}</div>
-                  <div className="text-xs text-muted-foreground">{tx.date} · {tx.currency} {tx.amount}</div>
+                <div
+                  key={tx.id || idx}
+                  className="p-3 border-b last:border-b-0 flex items-start gap-2"
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  <div className="flex-shrink-0 w-2 h-8 rounded bg-primary/80 mr-2" />
+                  <div>
+                    <div className="font-medium capitalize">{tx.type === 'send' ? `Sent to ${tx.recipient}` : `Received`}</div>
+                    <div className="text-xs text-muted-foreground">{tx.date} · {tx.currency} {tx.amount}</div>
+                  </div>
+                </div>
+              ))}
+              {insuranceNotifications.map((notif, idx) => (
+                <div
+                  key={notif.id || idx}
+                  className={`p-3 border-b last:border-b-0 flex items-start gap-2 ${!notif.read ? 'bg-accent/30' : ''}`}
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  <div className={`flex-shrink-0 w-2 h-8 rounded ${!notif.read ? 'bg-primary' : 'bg-muted'}`} />
+                  <div>
+                    <div className="font-medium">Insurance Claim: {notif.policy}</div>
+                    <div className="text-xs text-muted-foreground">{notif.date}</div>
+                    <div className="text-xs">Reason: {notif.reason}</div>
+                  </div>
                 </div>
               ))}
             </div>

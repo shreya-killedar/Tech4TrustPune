@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { sampleUser, savingsGoals } from '@/lib/data';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const getUserCurrency = () => {
   try {
@@ -57,8 +58,9 @@ const getUserBalance = () => {
 };
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const [showBalance, setShowBalance] = useState(true);
-  const userCurrency = getUserCurrency();
+  const [userCurrency, setUserCurrency] = useState(getUserCurrency());
   const userName = getUserName();
   const userEmail = getUserEmail();
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -79,7 +81,15 @@ const Dashboard = () => {
       }
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
-    return () => window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for currency-changed event
+    const onCurrencyChanged = () => {
+      setUserCurrency(getUserCurrency());
+    };
+    window.addEventListener('currency-changed', onCurrencyChanged);
+    return () => {
+      window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('currency-changed', onCurrencyChanged);
+    };
   }, [userEmail]);
 
   const getStatusIcon = (status: string) => {
@@ -117,8 +127,8 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome, {userName}!</h1>
-          <p className="text-muted-foreground">Manage your finances with ease.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('dashboard.welcome', { name: userName })}</h1>
+          <p className="text-muted-foreground">{t('dashboard.manageFinances')}</p>
         </div>
         <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
           {userName.split(' ').map(n => n[0]).join('')}
@@ -126,48 +136,56 @@ const Dashboard = () => {
       </div>
 
       {/* Balance Card */}
-      <Card className="bg-primary text-white border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm text-white/80">Total Balance</p>
-              <div className="flex items-center gap-2">
-                {showBalance ? (
-                  <p className="text-3xl font-bold">{formatCurrency(balance)}</p>
-                ) : (
-                  <p className="text-3xl font-bold">••••••</p>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="text-white hover:bg-white/10"
-                >
-                  {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
+      <Card
+        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        style={{
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
+        <CardContent className="p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-8 text-foreground">
+          <div>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>{t('dashboard.totalBalance')}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg text-foreground" style={{ letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.18)' }}>{showBalance ? formatCurrency(balance) : '••••••'}</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowBalance(!showBalance)}
+                className="rounded-full hover:bg-primary/10 transition-colors"
+                aria-label="Toggle balance visibility"
+              >
+                {showBalance ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+              </Button>
             </div>
-            <Wallet className="h-8 w-8 text-white/80" />
           </div>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="secondary" 
-              onClick={() => navigate('/dashboard/send')}
-              className="bg-white/20 hover:bg-white/30 text-white border-0"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Send Money
-            </Button>
-            <Button 
-              size="sm" 
-              variant="secondary"
-              onClick={() => navigate('/dashboard/wallet')}
-              className="bg-white/20 hover:bg-white/30 text-white border-0"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Money
-            </Button>
+          <div className="flex flex-col gap-4 items-end">
+            <div className="flex gap-3 mt-3">
+              <Button
+                size="lg"
+                variant="default"
+                onClick={() => navigate('/dashboard/send')}
+                className="bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0"
+              >
+                <Send className="h-5 w-5 mr-2" />
+                {t('dashboard.sendMoney')}
+              </Button>
+              <Button
+                size="lg"
+                variant="default"
+                onClick={() => navigate('/dashboard/wallet', { state: { tab: 'add-money' } })}
+                className="bg-gradient-to-r from-secondary to-primary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                {t('dashboard.addMoney')}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -179,8 +197,8 @@ const Dashboard = () => {
             <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
               <Send className="h-6 w-6 text-primary" />
             </div>
-            <p className="font-medium">Send Money</p>
-            <p className="text-sm text-muted-foreground">Quick transfer</p>
+            <p className="font-medium">{t('dashboard.sendMoney')}</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.quickTransfer')}</p>
           </CardContent>
         </Card>
 
@@ -189,8 +207,8 @@ const Dashboard = () => {
             <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-success/10 flex items-center justify-center">
               <Wallet className="h-6 w-6 text-success" />
             </div>
-            <p className="font-medium">Wallet</p>
-            <p className="text-sm text-muted-foreground">Manage funds</p>
+            <p className="font-medium">{t('dashboard.wallet')}</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.manageFunds')}</p>
           </CardContent>
         </Card>
 
@@ -199,8 +217,8 @@ const Dashboard = () => {
             <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-warning/10 flex items-center justify-center">
               <PiggyBank className="h-6 w-6 text-warning" />
             </div>
-            <p className="font-medium">Savings</p>
-            <p className="text-sm text-muted-foreground">Build your future</p>
+            <p className="font-medium">{t('dashboard.savings')}</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.buildFuture')}</p>
           </CardContent>
         </Card>
 
@@ -209,8 +227,8 @@ const Dashboard = () => {
             <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-destructive/10 flex items-center justify-center">
               <Shield className="h-6 w-6 text-destructive" />
             </div>
-            <p className="font-medium">Insurance</p>
-            <p className="text-sm text-muted-foreground">Stay protected</p>
+            <p className="font-medium">{t('dashboard.insurance')}</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.stayProtected')}</p>
           </CardContent>
         </Card>
       </div>
@@ -218,15 +236,15 @@ const Dashboard = () => {
       {/* Recent Transactions */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Recent Transactions</CardTitle>
+          <CardTitle className="text-lg">{t('dashboard.recentTransactions')}</CardTitle>
           <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/transactions')}>
-            View All
+            {t('dashboard.viewAll')}
           </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {transactions.length === 0 && (
-              <div className="p-3 text-center text-muted-foreground">No transactions yet.</div>
+              <div className="p-3 text-center text-muted-foreground">{t('dashboard.noTransactions')}</div>
             )}
             {transactions.slice(0, 4).map((transaction) => (
               <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -236,9 +254,9 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="font-medium">
-                      {transaction.type === 'send' ? `To ${transaction.recipient}` :
-                       transaction.type === 'receive' ? 'Money Received' :
-                       transaction.type === 'save' ? 'Saved' : 'Transaction'}
+                      {transaction.type === 'send' ? `${t('dashboard.to')} ${transaction.recipient}` :
+                       transaction.type === 'receive' ? t('dashboard.moneyReceived') :
+                       transaction.type === 'save' ? t('dashboard.saved') : t('dashboard.transaction')}
                     </p>
                     <p className="text-xs text-muted-foreground">{transaction.date}</p>
                   </div>
@@ -248,7 +266,7 @@ const Dashboard = () => {
                     {transaction.type === 'send' ? '-' : '+'}{formatCurrency(transaction.amount)}
                   </p>
                   {transaction.fee > 0 && (
-                    <p className="text-sm text-muted-foreground">Fee: {formatCurrency(transaction.fee)}</p>
+                    <p className="text-sm text-muted-foreground">{t('dashboard.fee')}: {formatCurrency(transaction.fee)}</p>
                   )}
                 </div>
               </div>
