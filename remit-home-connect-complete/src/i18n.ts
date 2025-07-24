@@ -192,7 +192,7 @@ const resources = {
         addMoney: 'Add Money',
         editGoal: 'Edit Goal',
         quickSave: 'Quick Save',
-        amountToSave: 'Amount to Save (USD)',
+        amountToSave: 'Amount to Save',
         quickSaveOptions: 'Quick Save Options',
         chooseSavingsGoal: 'Choose Savings Goal',
         saveAmount: 'Save ${{amount}}',

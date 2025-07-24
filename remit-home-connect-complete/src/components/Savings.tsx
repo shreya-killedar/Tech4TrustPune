@@ -131,7 +131,7 @@ const Savings = () => {
         }
         toast({
           title: 'Money Saved!',
-          description: `$${amt} added to your savings goal "${selectedGoal.name}"`,
+          description: `${formatCurrency(amt)} added to your savings goal "${selectedGoal.name}"`,
         });
         setDepositAmount('');
         setShowAddMoney(false);
@@ -322,7 +322,7 @@ const Savings = () => {
                   className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                 />
                 <div className="text-sm text-muted-foreground mt-1">
-                  {t('wallet.availableBalance')}: ${userBalance.toLocaleString()}
+                  {t('wallet.availableBalance')}: {formatCurrency(userBalance)}
                 </div>
               </div>
 
@@ -336,8 +336,7 @@ const Savings = () => {
                       onClick={() => setDepositAmount(amount.toString())}
                       className="h-16 flex-col rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                     >
-                      <DollarSign className="h-5 w-5 mb-1" />
-                      ${amount}
+                      {formatCurrency(amount)}
                     </Button>
                   ))}
                 </div>
