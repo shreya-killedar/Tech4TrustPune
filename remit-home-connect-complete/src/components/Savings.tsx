@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  PiggyBank, 
-  ArrowLeft, 
+import {
+  PiggyBank,
+  ArrowLeft,
   Plus,
   Target,
   TrendingUp,
@@ -23,8 +23,10 @@ import {
 import { savingsGoals } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import {  useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
 
 function getAuthUser() {
   try {
@@ -47,11 +49,33 @@ function setUserSavingsGoals(email: string, goals: any[]) {
   localStorage.setItem(key, JSON.stringify(goals));
 }
 
+function getAuthUser() {
+  try {
+    return JSON.parse(localStorage.getItem('auth_user') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function getUserSavingsGoals(email: string) {
+  const key = `savingsGoals_${email}`;
+  const stored = localStorage.getItem(key);
+  if (stored) return JSON.parse(stored);
+  // fallback to sample data
+  return savingsGoals;
+}
+
+function setUserSavingsGoals(email: string, goals: any[]) {
+  const key = `savingsGoals_${email}`;
+  localStorage.setItem(key, JSON.stringify(goals));
+}
 const Savings = () => {
   const { t } = useTranslation();
   const user = getAuthUser();
   const userEmail = user.email || 'sample';
   const [goals, setGoals] = useState(() => getUserSavingsGoals(userEmail));
+  const userCurrency = user.currency || 'USD';
+
   const [newGoal, setNewGoal] = useState({
     name: '',
     target: '',
@@ -83,6 +107,12 @@ const Savings = () => {
   const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
   const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
   const overallProgress = (totalSaved / totalTarget) * 100;
+  const formatCurrency = (value: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency: userCurrency }).format(value);
+
+  function updateGoals(newGoals: any[]) {
+    setGoals(newGoals);
+    setUserSavingsGoals(userEmail, newGoals);
+  }
 
   // Save to localStorage whenever goals change
   function updateGoals(newGoals: any[]) {
@@ -117,7 +147,7 @@ const Savings = () => {
       if (amt > 0) {
         const updated = goals.map(g => g.id === selectedGoal.id ? { ...g, currentAmount: g.currentAmount + amt } : g);
         updateGoals(updated);
-        // Deduct from user balance in localStorage
+
         const user = getAuthUser();
         if (user && user.email) {
           const newBalance = (user.balance || 0) - amt;
@@ -195,25 +225,37 @@ const Savings = () => {
       </div>
 
       {/* Overview Card */}
-      <Card className="bg-warning text-white border-0 shadow-lg">
-        <CardContent className="p-6">
+      <Card
+        className="rounded-2xl shadow-2xl bg-white/80 dark:bg-black/60 backdrop-blur-lg border border-primary/20 relative"
+        style={{
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)' }} />
+        <CardContent className="p-8 text-foreground">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-white/80">{t('savings.totalSaved')}</p>
-              <h2 className="text-3xl font-bold">${totalSaved.toLocaleString()}</h2>
-              <p className="text-sm text-white/80">{t('savings.ofTarget')}</p>
+              <p className="text-sm text-foreground/80">{t('savings.totalSaved')}</p>
+              <h2 className="text-3xl font-bold text-foreground drop-shadow">{formatCurrency(totalSaved)}</h2>
+              <p className="text-sm text-foreground/80">{t('savings.ofTarget')} {formatCurrency(totalTarget)}</p>
             </div>
-            <PiggyBank className="h-12 w-12 text-white/80" />
+            <PiggyBank className="h-12 w-12 text-primary" />
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>{t('savings.overallProgress')}</span>
               <span>{Math.round(overallProgress)}%</span>
             </div>
-            <div className="w-full bg-white/20 rounded-full h-2">
-              <div 
-                className="bg-white h-2 rounded-full transition-all"
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-primary h-2 rounded-full transition-all"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
@@ -234,10 +276,10 @@ const Savings = () => {
           {goals.map((goal) => {
             const progress = (goal.currentAmount / goal.targetAmount) * 100;
             const timeLeft = Math.ceil((new Date(goal.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-            
+
             return (
-              <Card key={goal.id} className="overflow-hidden">
-                <CardContent className="p-6">
+              <Card key={goal.id} className="overflow-hidden rounded-2xl shadow bg-background/80">
+                <CardContent className="p-6 text-foreground">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className={`w-12 h-12 rounded-full bg-muted flex items-center justify-center ${getCategoryColor(goal.category)}`}>
@@ -259,25 +301,30 @@ const Savings = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span>{t('savings.progress')}</span>
-                      <span>${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}</span>
+                      <span>{formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}</span>
                     </div>
                     <Progress value={progress} className="h-2" />
-                    
+
                     <div className="grid grid-cols-2 gap-4 pt-2">
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">{t('savings.remaining')}</p>
-                        <p className="font-bold text-primary">${(goal.targetAmount - goal.currentAmount).toLocaleString()}</p>
+                        <p className="font-bold text-primary">{formatCurrency(goal.targetAmount - goal.currentAmount)}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">{t('savings.monthlyNeeded')}</p>
                         <p className="font-bold text-warning">
-                          ${Math.ceil((goal.targetAmount - goal.currentAmount) / (timeLeft / 30)).toLocaleString()}
+                          {formatCurrency(Math.ceil((goal.targetAmount - goal.currentAmount) / (timeLeft / 30)))}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex gap-2 mt-4">
+                    <Button variant="outline" className="flex-1 rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" onClick={() => { setSelectedGoal(goal); setShowAddMoney(true); }}>
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      {t('savings.addMoney')}
+                    </Button>
+                    <Button variant="outline" size="sm" className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" onClick={() => { setEditGoalData({ ...goal }); setShowEditGoal(true); }}>{t('savings.editGoal')}</Button>                  </div>
                     <Button variant="outline" className="flex-1" onClick={() => { setSelectedGoal(goal); setShowAddMoney(true); }}>
                       <DollarSign className="h-4 w-4 mr-2" />
                       {t('savings.addMoney')}
@@ -292,11 +339,11 @@ const Savings = () => {
 
         {/* Save Money Tab */}
         <TabsContent value="save">
-          <Card>
+          <Card className="rounded-2xl shadow bg-background/80">
             <CardHeader>
               <CardTitle>{t('savings.quickSave')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 text-foreground">
               <div>
                 <Label htmlFor="deposit-amount">{t('savings.amountToSave')}</Label>
                 <Input
@@ -305,6 +352,7 @@ const Savings = () => {
                   placeholder="0.00"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
+                  className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                 />
                 <div className="text-sm text-muted-foreground mt-1">
                   {t('wallet.availableBalance')}: ${userBalance.toLocaleString()}
@@ -319,7 +367,7 @@ const Savings = () => {
                       key={amount}
                       variant="outline"
                       onClick={() => setDepositAmount(amount.toString())}
-                      className="h-16 flex-col"
+                      className="h-16 flex-col rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                     >
                       <DollarSign className="h-5 w-5 mb-1" />
                       ${amount}
@@ -343,7 +391,7 @@ const Savings = () => {
                           <span className="font-medium">{goal.name}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
-                          ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
+                          {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
                         </span>
                       </div>
                       {/* Show preview of after-save amount if this goal is selected and amount is entered */}
@@ -358,6 +406,15 @@ const Savings = () => {
                 </div>
               </div>
 
+  {selectedGoal && selectedGoal.id === goals.id && depositAmount && parseFloat(depositAmount) > 0 && (
+                        <div className="mt-2 text-sm">
+                          <span>Current: {formatCurrency(goals.currentAmount)} &rarr; </span>
+                          <span className="font-bold text-primary">After Save: {formatCurrency(goals.currentAmount + parseFloat(depositAmount))}</span>
+                        </div>
+                      )}
+
+<Button onClick={handleDeposit} className="w-full rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60" disabled={!depositAmount || !selectedGoal}>
+<PiggyBank className="h-4 w-4 mr-2" />
               <Button onClick={handleDeposit} className="w-full" disabled={!depositAmount || !selectedGoal}>
                 <PiggyBank className="h-4 w-4 mr-2" />
                 {t('savings.saveAmount', { amount: depositAmount || '0' })}
@@ -368,17 +425,17 @@ const Savings = () => {
 
         {/* Create Goal Tab */}
         <TabsContent value="create">
-          <Card>
+          <Card className="rounded-2xl shadow bg-background/80">
             <CardHeader>
               <CardTitle>{t('savings.createNewSavingsGoal')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 text-foreground">
               <div>
                 <Label htmlFor="goal-name">{t('savings.goalName')}</Label>
                 <Input
                   id="goal-name"
                   placeholder={t('savings.goalNamePlaceholder')}
-                  className="placeholder-black"
+                  className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                   value={newGoal.name}
                   onChange={(e) => setNewGoal({...newGoal, name: e.target.value})}
                 />
@@ -390,7 +447,7 @@ const Savings = () => {
                   id="goal-target"
                   type="number"
                   placeholder="0.00"
-                  className="placeholder-black"
+                  className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                   value={newGoal.target}
                   onChange={(e) => setNewGoal({...newGoal, target: e.target.value})}
                 />
@@ -398,7 +455,7 @@ const Savings = () => {
 
               <div>
                 <Label htmlFor="goal-category">{t('savings.category')}</Label>
-                <Select value={newGoal.category} onValueChange={(value) => setNewGoal({...newGoal, category: value})}>
+                <Select value={newGoal.category} onValueChange={(value) => setNewGoal({ ...newGoal, category: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder={t('savings.selectCategory')} />
                   </SelectTrigger>
@@ -438,6 +495,7 @@ const Savings = () => {
                   type="date"
                   value={newGoal.dueDate}
                   onChange={(e) => setNewGoal({...newGoal, dueDate: e.target.value})}
+                  className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                 />
               </div>
 
@@ -451,9 +509,9 @@ const Savings = () => {
                 </ul>
               </div>
 
-              <Button 
-                onClick={handleCreateGoal} 
-                className="w-full"
+              <Button
+                onClick={handleCreateGoal}
+                className="w-full rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60"
                 disabled={!newGoal.name || !newGoal.target || !newGoal.category}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -463,7 +521,9 @@ const Savings = () => {
           </Card>
         </TabsContent>
       </Tabs>
-
+            {/* Add Money Dialog */}
+            <Dialog open={showAddMoney} onOpenChange={setShowAddMoney}>
+        <DialogContent className="rounded-2xl shadow-2xl bg-white/90 dark:bg-black/80 backdrop-blur-lg border border-primary/20">
       {/* Add Money Dialog */}
       <Dialog open={showAddMoney} onOpenChange={setShowAddMoney}>
         <DialogContent>
@@ -476,6 +536,9 @@ const Savings = () => {
                 placeholder="0.00"
                 value={depositAmount}
                 onChange={e => setDepositAmount(e.target.value)}
+                className="mb-4 rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
+              />
+              <Button onClick={handleDeposit} className="rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60" disabled={!depositAmount || parseFloat(depositAmount) <= 0}>
                 className="mb-4"
               />
               <Button onClick={handleDeposit} disabled={!depositAmount || parseFloat(depositAmount) <= 0}>
@@ -487,6 +550,7 @@ const Savings = () => {
       </Dialog>
       {/* Edit Goal Dialog */}
       <Dialog open={showEditGoal} onOpenChange={setShowEditGoal}>
+        <DialogContent className="rounded-2xl shadow-2xl bg-white/90 dark:bg-black/80 backdrop-blur-lg border border-primary/20">
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('savings.editGoal')}</DialogTitle>
@@ -494,6 +558,9 @@ const Savings = () => {
               {editGoalData && (
                 <div className="space-y-3">
                   <Label>{t('savings.goalName')}</Label>
+                  <Input value={editGoalData.name} onChange={e => setEditGoalData({ ...editGoalData, name: e.target.value })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
+                  <Label>{t('savings.targetAmount')}</Label>
+                  <Input type="number" value={editGoalData.targetAmount} onChange={e => setEditGoalData({ ...editGoalData, targetAmount: parseFloat(e.target.value) })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
                   <Input value={editGoalData.name} onChange={e => setEditGoalData({ ...editGoalData, name: e.target.value })} />
                   <Label>{t('savings.targetAmount')}</Label>
                   <Input type="number" value={editGoalData.targetAmount} onChange={e => setEditGoalData({ ...editGoalData, targetAmount: parseFloat(e.target.value) })} />
@@ -510,8 +577,10 @@ const Savings = () => {
                     </SelectContent>
                   </Select>
                   <Label>{t('savings.targetDate')}</Label>
-                  <Input type="date" value={editGoalData.dueDate} onChange={e => setEditGoalData({ ...editGoalData, dueDate: e.target.value })} />
-                  <Button onClick={handleEditGoal}>{t('savings.saveProfileChanges') || 'Save'}</Button>
+                  <Input type="date" value={editGoalData.dueDate} onChange={e => setEditGoalData({ ...editGoalData, dueDate: e.target.value })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
+                  <Button onClick={handleEditGoal} className="rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60">Save</Button>
+
+                  
                 </div>
               )}
             </DialogDescription>
@@ -519,6 +588,8 @@ const Savings = () => {
         </DialogContent>
       </Dialog>
     </div>
+
+    
   );
 };
 

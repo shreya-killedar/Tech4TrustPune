@@ -126,8 +126,8 @@ const Settings = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
-          <p className="text-muted-foreground">{t('settings.manageSettings')}</p>
+          <h1 className="text-2xl font-bold">Settings</h1>
+          <p className="text-muted-foreground">Manage your account and preferences</p>
         </div>
       </div>
 
@@ -140,7 +140,10 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <span className="font-medium">{t('settings.light')}</span>
-          <Switch checked={theme === 'dark'} onCheckedChange={v => setTheme(v ? 'dark' : 'light')} />
+          <Switch
+            checked={theme === 'light'}
+            onCheckedChange={(checked) => setTheme(checked ? 'light' : 'dark')}
+          />
           <span className="font-medium">{t('settings.dark')}</span>
         </CardContent>
       </Card>

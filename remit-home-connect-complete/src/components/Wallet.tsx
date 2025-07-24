@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { 
   Wallet as WalletIcon, 
@@ -17,9 +17,10 @@ import {
   Eye,
   EyeOff,
   TrendingUp
-} from 'lucide-react';
+} from 'lucide-react';  
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 interface WalletProps {
   onNavigate: (page: string) => void;
@@ -53,6 +54,22 @@ function saveTransaction(userEmail: string, tx: any) {
   localStorage.setItem(key, JSON.stringify(txs));
 }
 
+function updateUserBalance(email: string, newBalance: number) {
+  // Update auth_user
+  const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+  if (authUser.email === email) {
+    authUser.balance = newBalance;
+    localStorage.setItem('auth_user', JSON.stringify(authUser));
+  }
+  // Update users array
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const idx = users.findIndex(u => u.email === email);
+  if (idx !== -1) {
+    users[idx].balance = newBalance;
+    localStorage.setItem('users', JSON.stringify(users));
+  }
+}
+
 const Wallet = ({ onNavigate }: WalletProps) => {
   const location = useLocation();
   const initialTab = location.state?.tab || 'transactions';
@@ -66,8 +83,13 @@ const Wallet = ({ onNavigate }: WalletProps) => {
   const user = getAuthUser();
   const userEmail = getUserEmail();
   const [userCurrency, setUserCurrency] = useState(user.currency || 'USD');
+  const [recipients, setRecipients] = useState(() => JSON.parse(localStorage.getItem(`recipients_${userEmail}`) || '[]'));
+  const [insurance, setInsurance] = useState(() => JSON.parse(localStorage.getItem(`insurance_${userEmail}`) || '[]'));
+  const [savings, setSavings] = useState(() => JSON.parse(localStorage.getItem(`savings_${userEmail}`) || '[]'));
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [selectedTab, setSelectedTab] = useState('transactions');
+  const [managerOpen, setManagerOpen] = useState(false);
 
   // Helper to get balance from localStorage
   function getUserBalance() {
@@ -115,7 +137,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
     if (amt && amt > 0) {
       const newBalance = balance + amt;
       setBalance(newBalance);
-      setAuthUser({ ...user, balance: newBalance });
+      updateUserBalance(userEmail, newBalance);
       // Add transaction
       const now = new Date();
       saveTransaction(userEmail, {
@@ -145,7 +167,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
     if (amt && amt > 0 && amt <= balance) {
       const newBalance = balance - amt;
       setBalance(newBalance);
-      setAuthUser({ ...user, balance: newBalance });
+      updateUserBalance(userEmail, newBalance);
       // Add transaction
       const now = new Date();
       saveTransaction(userEmail, {
@@ -183,6 +205,13 @@ const Wallet = ({ onNavigate }: WalletProps) => {
   // Only show send/receive/withdraw in wallet
   const walletTransactions = transactions.filter(t => t.type === 'receive' || t.type === 'send' || t.type === 'withdraw');
 
+  function formatCurrency(amount: number) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: userCurrency,
+    }).format(amount);
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -196,139 +225,105 @@ const Wallet = ({ onNavigate }: WalletProps) => {
         </div>
       </div>
 
-      {/* Balance Card */}
-      <Card className="bg-gradient-to-r from-primary to-primary-glow text-white border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <p className="text-sm text-white/80 mb-2">{t('wallet.availableBalance')}</p>
-              <div className="flex items-center gap-3">
-                {showBalance ? (
-                  <h2 className="text-4xl font-bold">{userCurrency} {balance.toLocaleString()}</h2>
-                ) : (
-                  <h2 className="text-4xl font-bold">••••••</h2>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="text-white hover:bg-white/10"
-                >
-                  {showBalance ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </Button>
-              </div>
-              <p className="text-sm text-white/80 mt-1">{t('wallet.lastUpdated', { time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })}</p>
-            </div>
-            <div className="text-center">
-              <WalletIcon className="h-12 w-12 text-white/80 mx-auto mb-2" />
-              <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                {t('wallet.active')}
-              </Badge>
+      {/* Wallet Manager Card */}
+      <Card
+        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        style={{
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
+        <CardContent className="p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+          <div>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>Wallet Manager</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg text-foreground" style={{ letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.12)' }}>{formatCurrency(balance)}</p>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="text-sm text-white/80">{t('wallet.thisMonth')}</p>
-              <div className="flex items-center justify-center gap-1">
-                <TrendingUp className="h-4 w-4 text-white" />
-                <p className="font-bold">+{userCurrency} {thisMonthTotal.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-white/80">{t('wallet.totalSent')}</p>
-              <p className="font-bold">{userCurrency} {totalSent.toLocaleString()}</p>
-            </div>
+          <div className="flex flex-col gap-3 items-end">
+            <Button
+              size="lg"
+              variant="default"
+              onClick={() => setManagerOpen(true)}
+            >
+              Wallet Manager
+            </Button>
           </div>
         </CardContent>
       </Card>
+      <Dialog open={managerOpen} onOpenChange={setManagerOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Wallet History</DialogTitle>
+            <DialogDescription>View all your wallet transactions.</DialogDescription>
+          </DialogHeader>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="px-3 py-2 text-left">Date</th>
+                  <th className="px-3 py-2 text-left">Type</th>
+                  <th className="px-3 py-2 text-left">Amount</th>
+                  <th className="px-3 py-2 text-left">Currency</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((tx, i) => (
+                  <tr key={tx.id || i} className="border-b last:border-b-0">
+                    <td className="px-3 py-2">{tx.date}</td>
+                    <td className="px-3 py-2 capitalize">{tx.type}</td>
+                    <td className="px-3 py-2">{formatCurrency(tx.amount)}</td>
+                    <td className="px-3 py-2">{tx.currency}</td>
+                    <td className="px-3 py-2">{tx.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Button 
-          variant={tab === 'send' ? 'default' : 'outline'}
-          className={`h-20 flex-col gap-2 ${tab === 'send' ? 'bg-primary text-white border-primary' : ''}`}
-          onClick={() => navigate('/dashboard/send')}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Button
+          onClick={() => setSelectedTab('transactions')}
+          className={`h-20 flex-col gap-2 ${selectedTab === 'transactions' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowUpRight className="h-6 w-6" />
-          <span>{t('wallet.sendMoney')}</span>
+          <span>Transactions</span>
         </Button>
-        
-        <Button 
-          variant={tab === 'add-money' ? 'default' : 'outline'}
-          className={`h-20 flex-col gap-2 ${tab === 'add-money' ? 'bg-primary text-white border-primary' : ''}`}
-          onClick={() => setTab('add-money')}
+        <Button
+          onClick={() => setSelectedTab('add-money')}
+          className={`h-20 flex-col gap-2 ${selectedTab === 'add-money' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <Plus className="h-6 w-6" />
           <span>{t('wallet.addMoney')}</span>
         </Button>
-        
-        <Button 
-          variant={tab === 'withdraw' ? 'default' : 'outline'}
-          className={`h-20 flex-col gap-2 ${tab === 'withdraw' ? 'bg-primary text-white border-primary' : ''}`}
-          onClick={() => setTab('withdraw')}
+        <Button
+          onClick={() => setSelectedTab('withdraw')}
+          className={`h-20 flex-col gap-2 ${selectedTab === 'withdraw' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowDownLeft className="h-6 w-6" />
           <span>{t('wallet.withdraw')}</span>
         </Button>
       </div>
 
-      {/* Wallet Management */}
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="transactions">{t('wallet.transactions')}</TabsTrigger>
-          <TabsTrigger value="add-money">{t('wallet.addMoney')}</TabsTrigger>
-          <TabsTrigger value="withdraw">{t('wallet.withdraw')}</TabsTrigger>
-        </TabsList>
+      {/* Panels */}
 
-        {/* Transactions Tab */}
-        <TabsContent value="transactions">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('wallet.recentTransactions')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {walletTransactions.length === 0 && (
-                  <div className="text-center text-muted-foreground">{t('wallet.noTransactionsYet')}</div>
-                )}
-                {walletTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        transaction.type === 'send' ? 'bg-destructive/10' : transaction.type === 'withdraw' ? 'bg-warning/10' : 'bg-success/10'
-                      }`}>
-                        {transaction.type === 'send' ? 
-                          <ArrowUpRight className="h-5 w-5 text-destructive" /> :
-                          transaction.type === 'withdraw' ? <ArrowDownLeft className="h-5 w-5 text-warning" /> :
-                          <ArrowDownLeft className="h-5 w-5 text-success" />
-                        }
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {transaction.type === 'send' ? `${t('wallet.sentTo')} ${transaction.recipient}` :
-                            transaction.type === 'withdraw' ? t('wallet.withdrawal') : t('wallet.moneyReceived')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{transaction.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-bold ${transaction.type === 'send' ? 'text-destructive' : transaction.type === 'withdraw' ? 'text-warning' : 'text-success'}`}>
-                        {transaction.type === 'send' ? '-' : '+'}{userCurrency} {transaction.amount.toLocaleString()}
-                      </p>
-                      <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
-                        {transaction.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Add Money Tab */}
-        <TabsContent value="add-money">
+      {selectedTab === 'add-money' && (
+        <div className="bg-card p-6 rounded-xl shadow">
           <Card>
             <CardHeader>
               <CardTitle>{t('wallet.addMoneyToWallet')}</CardTitle>
@@ -344,10 +339,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   onChange={(e) => setAddAmount(e.target.value)}
                 />
               </div>
-
               <div className="space-y-4">
                 <h3 className="font-medium">{t('wallet.paymentMethods')}</h3>
-                
                 <div className="space-y-3">
                   <div className="p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
                     <div className="flex items-center gap-3">
@@ -359,7 +352,6 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                       <Badge variant="default">{t('wallet.instant')}</Badge>
                     </div>
                   </div>
-
                   <div className="p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
                     <div className="flex items-center gap-3">
                       <Banknote className="h-6 w-6 text-primary" />
@@ -372,17 +364,16 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   </div>
                 </div>
               </div>
-
               <Button onClick={handleAddMoney} className="w-full" disabled={!addAmount || parseFloat(addAmount) <= 0}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('wallet.addAmountToWallet', { currency: userCurrency, amount: addAmount || '0' })}
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* Withdraw Tab */}
-        <TabsContent value="withdraw">
+        </div>
+      )}
+      {selectedTab === 'withdraw' && (
+        <div className="bg-card p-6 rounded-xl shadow">
           <Card>
             <CardHeader>
               <CardTitle>{t('wallet.withdrawMoney')}</CardTitle>
@@ -401,10 +392,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   {t('wallet.availableBalance', { currency: userCurrency, balance: balance.toLocaleString() })}
                 </p>
               </div>
-
               <div className="space-y-4">
                 <h3 className="font-medium">{t('wallet.withdrawalMethod')}</h3>
-                
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <Banknote className="h-6 w-6 text-primary" />
@@ -416,7 +405,6 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   </div>
                 </div>
               </div>
-
               <div className="bg-muted/50 p-4 rounded-lg">
                 <h4 className="font-medium mb-2">{t('wallet.withdrawalInformation')}</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
@@ -426,7 +414,6 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   <li>• {t('wallet.available247')}</li>
                 </ul>
               </div>
-
               <Button 
                 onClick={handleWithdraw} 
                 className="w-full" 
@@ -437,8 +424,48 @@ const Wallet = ({ onNavigate }: WalletProps) => {
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
+      {selectedTab === 'transactions' && (
+        <div className="bg-card p-6 rounded-xl shadow">
+          <h2 className="text-xl font-bold mb-4">Recent Transactions</h2>
+          <div className="space-y-4">
+            {walletTransactions.length === 0 && (
+              <div className="text-center text-muted-foreground">No transactions yet.</div>
+            )}
+            {walletTransactions.map((transaction) => (
+              <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    transaction.type === 'send' ? 'bg-destructive/10' : transaction.type === 'withdraw' ? 'bg-warning/10' : 'bg-success/10'
+                  }`}>
+                    {transaction.type === 'send' ? 
+                      <ArrowUpRight className="h-5 w-5 text-destructive" /> :
+                      transaction.type === 'withdraw' ? <ArrowDownLeft className="h-5 w-5 text-warning" /> :
+                      <ArrowDownLeft className="h-5 w-5 text-success" />
+                    }
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {transaction.type === 'send' ? `Sent to ${transaction.recipient}` :
+                        transaction.type === 'withdraw' ? 'Withdrawal' : 'Money Received'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={`font-bold ${transaction.type === 'send' ? 'text-destructive' : transaction.type === 'withdraw' ? 'text-warning' : 'text-success'}`}>
+                    {transaction.type === 'send' ? '-' : '+'}{userCurrency} {transaction.amount.toLocaleString()}
+                  </p>
+                  <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
+                    {transaction.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

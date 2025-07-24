@@ -136,48 +136,56 @@ const Dashboard = () => {
       </div>
 
       {/* Balance Card */}
-      <Card className="bg-primary text-white border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm text-white/80">{t('dashboard.totalBalance')}</p>
-              <div className="flex items-center gap-2">
-                {showBalance ? (
-                  <p className="text-3xl font-bold">{formatCurrency(balance)}</p>
-                ) : (
-                  <p className="text-3xl font-bold">••••••</p>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="text-white hover:bg-white/10"
-                >
-                  {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
+      <Card
+        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        style={{
+          background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
+          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
+          borderRadius: '1.25rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
+        <CardContent className="p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-8 text-foreground">
+          <div>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>{t('dashboard.totalBalance')}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg text-foreground" style={{ letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.18)' }}>{showBalance ? formatCurrency(balance) : '••••••'}</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowBalance(!showBalance)}
+                className="rounded-full hover:bg-primary/10 transition-colors"
+                aria-label="Toggle balance visibility"
+              >
+                {showBalance ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+              </Button>
             </div>
-            <Wallet className="h-8 w-8 text-white/80" />
           </div>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="secondary" 
-              onClick={() => navigate('/dashboard/send')}
-              className="bg-white/20 hover:bg-white/30 text-white border-0"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              {t('dashboard.sendMoney')}
-            </Button>
-            <Button 
-              size="sm" 
-              variant="secondary"
-              onClick={() => navigate('/dashboard/wallet', { state: { tab: 'add-money' } })}
-              className="bg-white/20 hover:bg-white/30 text-white border-0"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t('dashboard.addMoney')}
-            </Button>
+          <div className="flex flex-col gap-4 items-end">
+            <div className="flex gap-3 mt-3">
+              <Button
+                size="lg"
+                variant="default"
+                onClick={() => navigate('/dashboard/send')}
+                className="bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0"
+              >
+                <Send className="h-5 w-5 mr-2" />
+                {t('dashboard.sendMoney')}
+              </Button>
+              <Button
+                size="lg"
+                variant="default"
+                onClick={() => navigate('/dashboard/wallet', { state: { tab: 'add-money' } })}
+                className="bg-gradient-to-r from-secondary to-primary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                {t('dashboard.addMoney')}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

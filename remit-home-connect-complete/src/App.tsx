@@ -31,14 +31,6 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
   return children;
 }
 
-function AuthRoute({ children }: { children: JSX.Element }) {
-  // Prevent access to login/register if already logged in
-  if (isAuthenticated()) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  return children;
-}
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -46,19 +38,19 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
-          <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
+          <Route path="/" element={<Index />} />
           <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/send" element={<SendMoney />} />
-            <Route path="/dashboard/wallet" element={<Wallet />} />
+            <Route path="/dashboard/wallet" element={<Wallet onNavigate={function (page: string): void {
+              throw new Error("Function not implemented.");
+            } } />} />
             <Route path="/dashboard/savings" element={<Savings />} />
             <Route path="/dashboard/insurance" element={<Insurance />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/transactions" element={<Transactions />} />
           </Route>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

@@ -131,11 +131,21 @@ const SendMoney = () => {
       fee: transferFee,
       exchangeRate: exchangeRate
     });
-    // Deduct from user balance in localStorage
+    // Deduct from user balance in localStorage and update users array
     const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
     const newBalance = (authUser.balance || 0) - totalAmount;
-    const updatedUser = { ...authUser, balance: newBalance };
-    localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+    // Update auth_user
+    if (authUser.email === user.email) {
+      authUser.balance = newBalance;
+      localStorage.setItem('auth_user', JSON.stringify(authUser));
+    }
+    // Update users array
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const idx = users.findIndex((u: any) => u.email === user.email);
+    if (idx !== -1) {
+      users[idx].balance = newBalance;
+      localStorage.setItem('users', JSON.stringify(users));
+    }
     toast({
       title: t('sendMoney.moneySentSuccess'),
       description: `${userCurrency} ${formData.amount} ${t('sendMoney.sentTo')} ${formData.recipient} ${t('sendMoney.in')} ${selectedCountry?.name}`,
