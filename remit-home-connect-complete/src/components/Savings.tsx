@@ -23,7 +23,6 @@ import {
 import { savingsGoals } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import {  useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
@@ -49,26 +48,6 @@ function setUserSavingsGoals(email: string, goals: any[]) {
   localStorage.setItem(key, JSON.stringify(goals));
 }
 
-function getAuthUser() {
-  try {
-    return JSON.parse(localStorage.getItem('auth_user') || '{}');
-  } catch {
-    return {};
-  }
-}
-
-function getUserSavingsGoals(email: string) {
-  const key = `savingsGoals_${email}`;
-  const stored = localStorage.getItem(key);
-  if (stored) return JSON.parse(stored);
-  // fallback to sample data
-  return savingsGoals;
-}
-
-function setUserSavingsGoals(email: string, goals: any[]) {
-  const key = `savingsGoals_${email}`;
-  localStorage.setItem(key, JSON.stringify(goals));
-}
 const Savings = () => {
   const { t } = useTranslation();
   const user = getAuthUser();
@@ -109,12 +88,6 @@ const Savings = () => {
   const overallProgress = (totalSaved / totalTarget) * 100;
   const formatCurrency = (value: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency: userCurrency }).format(value);
 
-  function updateGoals(newGoals: any[]) {
-    setGoals(newGoals);
-    setUserSavingsGoals(userEmail, newGoals);
-  }
-
-  // Save to localStorage whenever goals change
   function updateGoals(newGoals: any[]) {
     setGoals(newGoals);
     setUserSavingsGoals(userEmail, newGoals);
@@ -319,12 +292,7 @@ const Savings = () => {
                       <DollarSign className="h-4 w-4 mr-2" />
                       {t('savings.addMoney')}
                     </Button>
-                    <Button variant="outline" size="sm" className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" onClick={() => { setEditGoalData({ ...goal }); setShowEditGoal(true); }}>{t('savings.editGoal')}</Button>                  </div>
-                    <Button variant="outline" className="flex-1" onClick={() => { setSelectedGoal(goal); setShowAddMoney(true); }}>
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      {t('savings.addMoney')}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => { setEditGoalData({ ...goal }); setShowEditGoal(true); }}>{t('savings.editGoal')}</Button>
+                    <Button variant="outline" size="sm" className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" onClick={() => { setEditGoalData({ ...goal }); setShowEditGoal(true); }}>{t('savings.editGoal')}</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -401,16 +369,7 @@ const Savings = () => {
                 </div>
               </div>
 
-  {selectedGoal && selectedGoal.id === goals.id && depositAmount && parseFloat(depositAmount) > 0 && (
-                        <div className="mt-2 text-sm">
-                          <span>Current: {formatCurrency(goals.currentAmount)} &rarr; </span>
-                          <span className="font-bold text-primary">After Save: {formatCurrency(goals.currentAmount + parseFloat(depositAmount))}</span>
-                        </div>
-                      )}
-
-<Button onClick={handleDeposit} className="w-full rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60" disabled={!depositAmount || !selectedGoal}>
-<PiggyBank className="h-4 w-4 mr-2" />
-              <Button onClick={handleDeposit} className="w-full" disabled={!depositAmount || !selectedGoal}>
+              <Button onClick={handleDeposit} className="w-full rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60" disabled={!depositAmount || !selectedGoal}>
                 <PiggyBank className="h-4 w-4 mr-2" />
                 {t('savings.saveAmount', { amount: depositAmount || '0' })}
               </Button>
@@ -518,70 +477,58 @@ const Savings = () => {
       </Tabs>
             {/* Add Money Dialog */}
             <Dialog open={showAddMoney} onOpenChange={setShowAddMoney}>
-        <DialogContent className="rounded-2xl shadow-2xl bg-white/90 dark:bg-black/80 backdrop-blur-lg border border-primary/20">
-      {/* Add Money Dialog */}
-      <Dialog open={showAddMoney} onOpenChange={setShowAddMoney}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('savings.addMoney')}</DialogTitle>
-            <DialogDescription>
-              {selectedGoal && <div className="mb-2 font-medium">{selectedGoal.name}</div>}
-              <Input
-                type="number"
-                placeholder="0.00"
-                value={depositAmount}
-                onChange={e => setDepositAmount(e.target.value)}
-                className="mb-4 rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
-              />
-              <Button onClick={handleDeposit} className="rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60" disabled={!depositAmount || parseFloat(depositAmount) <= 0}>
-                className="mb-4"
-              />
-              <Button onClick={handleDeposit} disabled={!depositAmount || parseFloat(depositAmount) <= 0}>
-                {t('savings.addMoney')}
-              </Button>
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-      {/* Edit Goal Dialog */}
-      <Dialog open={showEditGoal} onOpenChange={setShowEditGoal}>
-        <DialogContent className="rounded-2xl shadow-2xl bg-white/90 dark:bg-black/80 backdrop-blur-lg border border-primary/20">
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('savings.editGoal')}</DialogTitle>
-            <DialogDescription>
-              {editGoalData && (
-                <div className="space-y-3">
-                  <Label>{t('savings.goalName')}</Label>
-                  <Input value={editGoalData.name} onChange={e => setEditGoalData({ ...editGoalData, name: e.target.value })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
-                  <Label>{t('savings.targetAmount')}</Label>
-                  <Input type="number" value={editGoalData.targetAmount} onChange={e => setEditGoalData({ ...editGoalData, targetAmount: parseFloat(e.target.value) })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
-                  <Input value={editGoalData.name} onChange={e => setEditGoalData({ ...editGoalData, name: e.target.value })} />
-                  <Label>{t('savings.targetAmount')}</Label>
-                  <Input type="number" value={editGoalData.targetAmount} onChange={e => setEditGoalData({ ...editGoalData, targetAmount: parseFloat(e.target.value) })} />
-                  <Label>{t('savings.category')}</Label>
-                  <Select value={editGoalData.category} onValueChange={value => setEditGoalData({ ...editGoalData, category: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('savings.selectCategory')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="emergency">{t('savings.emergencyFund')}</SelectItem>
-                      <SelectItem value="home">{t('savings.homeProperty')}</SelectItem>
-                      <SelectItem value="education">{t('savings.education')}</SelectItem>
-                      <SelectItem value="business">{t('savings.business')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Label>{t('savings.targetDate')}</Label>
-                  <Input type="date" value={editGoalData.dueDate} onChange={e => setEditGoalData({ ...editGoalData, dueDate: e.target.value })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
-                  <Button onClick={handleEditGoal} className="rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60">Save</Button>
-
-                  
-                </div>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+              <DialogContent className="rounded-2xl shadow-2xl bg-white/90 dark:bg-black/80 backdrop-blur-lg border border-primary/20">
+                <DialogHeader>
+                  <DialogTitle>{t('savings.addMoney')}</DialogTitle>
+                  <DialogDescription>
+                    {selectedGoal && <div className="mb-2 font-medium">{selectedGoal.name}</div>}
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={depositAmount}
+                      onChange={e => setDepositAmount(e.target.value)}
+                      className="mb-4 rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
+                    />
+                    <Button onClick={handleDeposit} className="rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60" disabled={!depositAmount || parseFloat(depositAmount) <= 0}>
+                      {t('savings.addMoney')}
+                    </Button>
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+            {/* Edit Goal Dialog */}
+            <Dialog open={showEditGoal} onOpenChange={setShowEditGoal}>
+              <DialogContent className="rounded-2xl shadow-2xl bg-white/90 dark:bg-black/80 backdrop-blur-lg border border-primary/20">
+                <DialogHeader>
+                  <DialogTitle>{t('savings.editGoal')}</DialogTitle>
+                  <DialogDescription>
+                    {editGoalData && (
+                      <div className="space-y-3">
+                        <Label>{t('savings.goalName')}</Label>
+                        <Input value={editGoalData.name} onChange={e => setEditGoalData({ ...editGoalData, name: e.target.value })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
+                        <Label>{t('savings.targetAmount')}</Label>
+                        <Input type="number" value={editGoalData.targetAmount} onChange={e => setEditGoalData({ ...editGoalData, targetAmount: parseFloat(e.target.value) })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
+                        <Label>{t('savings.category')}</Label>
+                        <Select value={editGoalData.category} onValueChange={value => setEditGoalData({ ...editGoalData, category: value })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('savings.selectCategory')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="emergency">{t('savings.emergencyFund')}</SelectItem>
+                            <SelectItem value="home">{t('savings.homeProperty')}</SelectItem>
+                            <SelectItem value="education">{t('savings.education')}</SelectItem>
+                            <SelectItem value="business">{t('savings.business')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Label>{t('savings.targetDate')}</Label>
+                        <Input type="date" value={editGoalData.dueDate} onChange={e => setEditGoalData({ ...editGoalData, dueDate: e.target.value })} className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" />
+                        <Button onClick={handleEditGoal} className="rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg focus:ring-2 focus:ring-primary/60">Save</Button>
+                      </div>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
     </div>
 
     
