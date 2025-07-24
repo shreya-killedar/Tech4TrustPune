@@ -1,74 +1,131 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useTranslation } from 'react-i18next';
-import { HelpCircle, X, Send as SendIcon } from 'lucide-react';
+import { HelpCircle, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const OPENAI_KEY_URL = 'https://platform.openai.com/api-keys';
+const QUESTIONS = [
+  {
+    question: 'How do I send money?',
+    buttonLabel: 'Go to Send Money',
+    path: '/dashboard/send',
+  },
+  {
+    question: 'How can I view my transactions?',
+    buttonLabel: 'View Transactions',
+    path: '/dashboard/transactions',
+  },
+  {
+    question: 'How do I update my profile?',
+    buttonLabel: 'Update Profile',
+    path: '/dashboard/settings',
+  },
+  {
+    question: 'How do I check my savings?',
+    buttonLabel: 'Check Savings',
+    path: '/dashboard/savings',
+  },
+  {
+    question: 'How do I contact support?',
+    buttonLabel: 'Contact Support',
+    path: 'mailto:support@cashbridge.com',
+    isMail: true,
+  },
+  {
+    question: 'How do I view FAQs?',
+    buttonLabel: 'View FAQ',
+    isFAQ: true,
+  },
+];
 
 const ChatBot = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { from: 'bot', text: t('chatbot.greeting') }
-  ]);
-  const [loading, setLoading] = useState(false);
-  const [apiKey, setApiKey] = useState(localStorage.getItem('openai_api_key') || '');
-  const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey);
+  const [selectedQuestion, setSelectedQuestion] = useState<number | null>(null);
 
-  const handleApiKeySave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (apiKey) {
-      localStorage.setItem('openai_api_key', apiKey);
-      setShowApiKeyInput(false);
-    }
-  };
-
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = (e.target as any).elements.message.value;
-    if (!text) return;
-    setMessages([...messages, { from: 'user', text }]);
-    setLoading(true);
-    (e.target as any).reset();
-    try {
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: 'You are a helpful assistant for a cross-border finance app.' },
-            ...messages.filter(m => m.from !== 'bot').map(m => ({ role: 'user', content: m.text })),
-            { role: 'user', content: text }
-          ],
-          max_tokens: 100,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      const aiText = response.data.choices[0].message.content.trim();
-      setMessages(msgs => [...msgs, { from: 'bot', text: aiText }]);
-    } catch (err) {
-      setMessages(msgs => [...msgs, { from: 'bot', text: 'Sorry, I could not connect to OpenAI. Please check your API key or try again.' }]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Show FAQ button if FAQ question is selected
+  const showFAQButton =
+    selectedQuestion !== null &&
+    QUESTIONS[selectedQuestion].question.toLowerCase().includes('faq');
 
   return (
     <>
+      <style>
+        {`
+          @keyframes chatbot-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(59,130,246,0); }
+            100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+          }
+          @keyframes askme-fade {
+            0% { opacity: 0; transform: translateY(-20px) scale(0.9); }
+            30% { opacity: 1; transform: translateY(-32px) scale(1.1); }
+            70% { opacity: 1; transform: translateY(-32px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-44px) scale(0.9); }
+          }
+          .askme-animate {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 100%;
+            margin-bottom: 10px;
+            background: rgba(30,41,59,0.85); /* dark blue for contrast in light mode */
+            color: #fff;
+            backdrop-filter: blur(6px) saturate(1.2);
+            -webkit-backdrop-filter: blur(6px) saturate(1.2);
+            padding: 4px 16px;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: 'Quicksand', 'Segoe UI', 'Inter', 'Arial', sans-serif;
+            letter-spacing: 0.03em;
+            pointer-events: none;
+            border: 1px solid rgba(0,0,0,0.10);
+            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10), 0 1.5px 6px 0 rgba(6,182,212,0.08);
+            animation: askme-fade 1.5s infinite, askme-float 2.5s ease-in-out infinite;
+            z-index: 100;
+            text-shadow: 0 2px 8px rgba(59,130,246,0.10), 0 1px 2px rgba(0,0,0,0.10);
+            overflow: hidden;
+            transition: background 0.3s, box-shadow 0.3s, color 0.3s;
+          }
+          html.dark .askme-animate {
+            background: rgba(255,255,255,0.92); /* light background for dark mode */
+            color: #1e293b; /* dark text for dark mode */
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px 0 rgba(255,255,255,0.10), 0 1.5px 6px 0 rgba(6,182,212,0.08);
+            text-shadow: 0 2px 8px rgba(255,255,255,0.10), 0 1px 2px rgba(0,0,0,0.10);
+          }
+          .askme-animate .shimmer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(120deg, transparent 0%, #3b82f6 40%, #06b6d4 60%, transparent 100%);
+            opacity: 0.25;
+            filter: blur(2px);
+            animation: shimmer-move 1.5s infinite;
+            pointer-events: none;
+          }
+          @keyframes shimmer-move {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          @keyframes askme-float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+          }
+        `}
+      </style>
       {/* Floating Chat Button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-xl bg-gradient-to-br from-blue-600 to-blue-400 text-white font-semibold text-lg backdrop-blur-md border border-white/20 hover:scale-105 transition-all"
-        style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-xl bg-transparent border-none hover:scale-105 transition-all chatbot-pulse-btn group"
+        style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)', padding: 0, width: '80px', height: '80px', animation: 'chatbot-pulse 1.5s infinite' }}
         aria-label="Open AI ChatBot"
       >
-        <HelpCircle className="w-6 h-6 mr-1" />
-        {t('chatbot.title')}
+        <span className="askme-animate" style={{position:'absolute'}}>
+          <span style={{position:'relative',zIndex:2}}>Ask me</span>
+          <span className="shimmer"></span>
+        </span>
+        <img src="/favicon.ico" alt="ChatBot logo" className="w-16 h-16 rounded-full bg-white" />
       </button>
       {/* Chat Modal */}
       {open && (
@@ -77,60 +134,83 @@ const ChatBot = () => {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 bg-gradient-to-r from-blue-600 to-blue-400 text-white">
               <div className="flex items-center gap-2">
-                <HelpCircle className="w-5 h-5" />
+                <img src="/favicon.ico" alt="ChatBot logo" className="w-8 h-8 rounded-full bg-white" />
                 <span className="font-bold text-lg">{t('chatbot.title')}</span>
               </div>
-              <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/20 transition" aria-label="Close chatbot">
+              <button onClick={() => { setOpen(false); setSelectedQuestion(null); }} className="p-1 rounded hover:bg-white/20 transition" aria-label="Close chatbot">
                 <X className="w-6 h-6" />
               </button>
             </div>
-            {/* API Key Input */}
-            {showApiKeyInput && (
-              <div className="p-5 bg-blue-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                <div className="mb-2 text-blue-900 dark:text-blue-200 text-sm">
-                  <b>API Key Required:</b> To use the AI ChatBot, you need a free <a href={OPENAI_KEY_URL} target="_blank" rel="noopener noreferrer" className="underline text-blue-700 dark:text-blue-300">OpenAI API key</a>.<br/>
-                  <span className="text-xs text-zinc-500">(Your key is stored only in your browser.)</span>
-                </div>
-                <form onSubmit={handleApiKeySave} className="flex gap-2">
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={e => setApiKey(e.target.value)}
-                    placeholder="Paste your OpenAI API Key here"
-                    className="flex-1 border px-3 py-2 rounded text-black"
-                    required
-                  />
-                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded font-semibold">Save</button>
-                </form>
-              </div>
-            )}
-            {/* Chat Area */}
-            <div className="flex-1 flex flex-col p-5 bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900" style={{ minHeight: 320, maxHeight: 400, overflowY: 'auto' }}>
-              {messages.map((msg, i) => (
-                <div key={i} className={`mb-3 flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`px-4 py-2 rounded-2xl max-w-[80%] shadow text-base ${msg.from === 'bot' ? 'bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100' : 'bg-blue-600 text-white'}`}>
-                    {msg.text}
+            {/* Chat Area - Questions or Redirect Button */}
+            <div className="flex-1 flex flex-col p-5 bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 items-center justify-center" style={{ minHeight: 320, maxHeight: 400 }}>
+              {selectedQuestion === null ? (
+                <div className="w-full">
+                  <div className="text-center text-blue-900 dark:text-blue-100 text-lg font-semibold mb-4">
+                    How can we help you?
                   </div>
+                  <ul className="space-y-3">
+                    {QUESTIONS.map((q, idx) => (
+                      <li key={idx}>
+                        <button
+                          className="w-full text-left px-4 py-3 rounded-xl bg-blue-100 dark:bg-blue-800 text-blue-900 dark:text-blue-100 font-medium shadow hover:bg-blue-200 dark:hover:bg-blue-700 transition"
+                          onClick={() => setSelectedQuestion(idx)}
+                        >
+                          {q.question}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
-              {loading && <div className="text-gray-400 text-center">...</div>}
+              ) : (
+                <div className="w-full flex flex-col items-center">
+                  <div className="flex gap-2 mb-4 self-start">
+                    <button
+                      className="text-blue-600 dark:text-blue-300 underline text-sm"
+                      onClick={() => setSelectedQuestion(null)}
+                    >
+                      Back
+                    </button>
+                    <button
+                      className="text-blue-600 dark:text-blue-300 underline text-sm"
+                      onClick={() => setSelectedQuestion(null)}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  <div className="text-blue-900 dark:text-blue-100 text-lg font-semibold mb-6 text-center">
+                    {QUESTIONS[selectedQuestion].question}
+                  </div>
+                  {/* FAQ: show only one button that navigates to FAQ page */}
+                  {QUESTIONS[selectedQuestion].isFAQ ? (
+                    <button
+                      className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
+                      onClick={() => {
+                        setOpen(false);
+                        navigate('/dashboard/faq');
+                      }}
+                    >
+                      View FAQ
+                    </button>
+                  ) : QUESTIONS[selectedQuestion].isMail ? (
+                    <a
+                      href={QUESTIONS[selectedQuestion].path}
+                      className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
+                      onClick={() => setOpen(false)}
+                    >
+                      {QUESTIONS[selectedQuestion].buttonLabel}
+                    </a>
+                  ) : (
+                    <Link
+                      to={QUESTIONS[selectedQuestion].path}
+                      className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
+                      onClick={() => setOpen(false)}
+                    >
+                      {QUESTIONS[selectedQuestion].buttonLabel}
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
-            {/* Input */}
-            {!showApiKeyInput && (
-              <form onSubmit={handleSend} className="flex gap-2 p-4 border-t border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
-                <input
-                  name="message"
-                  className="flex-1 border px-3 py-2 rounded-2xl text-black dark:text-white bg-zinc-100 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder={t('chatbot.placeholder')}
-                  disabled={loading}
-                  autoComplete="off"
-                />
-                <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-2xl font-semibold flex items-center gap-1" disabled={loading}>
-                  <SendIcon className="w-5 h-5" />
-                  {t('chatbot.send')}
-                </button>
-              </form>
-            )}
           </div>
         </div>
       )}

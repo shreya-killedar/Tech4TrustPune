@@ -16,6 +16,7 @@ import Transactions from "./components/Transactions";
 import Wallet from "./components/Wallet";
 import SendMoney from "./components/SendMoney";
 import DashboardLayout from "./components/DashboardLayout";
+import FAQ from './components/FAQ';
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/dashboard/savings" element={<Savings />} />
             <Route path="/dashboard/insurance" element={<Insurance />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/faq" element={<FAQ />} />
             <Route path="/dashboard/transactions" element={<Transactions />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -341,14 +341,9 @@ const Insurance = () => {
 
       {/* Overview Card */}
       <Card
-        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        className="rounded-2xl shadow-lg border border-border relative mb-8 transition-all hover:shadow-2xl focus-within:ring-2 focus-within:ring-primary/60"
         style={{
           background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
-          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
-          borderRadius: '1.25rem',
-          marginBottom: '2rem',
-          position: 'relative',
-          zIndex: 1,
           overflow: 'hidden',
         }}
       >
@@ -388,7 +383,7 @@ const Insurance = () => {
             const expiry = getPolicyExpiry(insurance);
             const expired = isPolicyExpired(insurance);
             return (
-              <Card key={insurance.id} className={`transition-all ${insurance.isActive ? 'ring-2 ring-primary/20' : 'opacity-75'}`}>
+              <Card key={insurance.id} className={`rounded-xl shadow-md border border-border transition-all hover:shadow-xl focus-within:ring-2 focus-within:ring-primary/60 ${insurance.isActive ? 'ring-2 ring-primary/20' : 'opacity-75'}`}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-4">
@@ -454,7 +449,7 @@ const Insurance = () => {
                   <div className="flex gap-2 mt-4">
                     <Dialog open={detailsOpen && selectedPolicy?.id === insurance.id} onOpenChange={v => { setDetailsOpen(v); if (!v) setSelectedPolicy(null); }}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" className="flex-1" onClick={() => handleViewDetails(insurance)}>
+                        <Button variant="outline" className="flex-1 rounded-lg shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/60" onClick={() => handleViewDetails(insurance)}>
                           View Details
                         </Button>
                       </DialogTrigger>

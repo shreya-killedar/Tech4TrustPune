@@ -137,14 +137,9 @@ const Dashboard = () => {
 
       {/* Balance Card */}
       <Card
-        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        className="rounded-2xl shadow-lg border border-border relative transition-all hover:shadow-2xl focus-within:ring-2 focus-within:ring-primary/60 mb-8"
         style={{
           background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
-          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
-          borderRadius: '1.25rem',
-          marginBottom: '2rem',
-          position: 'relative',
-          zIndex: 1,
           overflow: 'hidden',
         }}
       >
@@ -171,7 +166,7 @@ const Dashboard = () => {
                 size="lg"
                 variant="default"
                 onClick={() => navigate('/dashboard/send')}
-                className="bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0"
+                className="bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-md px-6 py-2 rounded-xl text-lg hover:scale-105 transition-transform border-0 focus:outline-none focus:ring-2 focus:ring-primary/60"
               >
                 <Send className="h-5 w-5 mr-2" />
                 {t('dashboard.sendMoney')}
@@ -192,7 +187,7 @@ const Dashboard = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/dashboard/send')}>
+        <Card className="cursor-pointer rounded-xl shadow-md border border-border transition-all hover:shadow-xl hover:bg-primary/10 focus-within:ring-2 focus-within:ring-primary/60" onClick={() => navigate('/dashboard/send')} tabIndex={0}>
           <CardContent className="p-4 text-center">
             <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
               <Send className="h-6 w-6 text-primary" />
@@ -208,7 +203,7 @@ const Dashboard = () => {
               <Wallet className="h-6 w-6 text-success" />
             </div>
             <p className="font-medium">{t('dashboard.wallet')}</p>
-            <p className="text-sm text-muted-foreground">{t('dashboard.manageFunds')}</p>
+            <p className="text-sm text-muted-foreground">Manage funds</p>
           </CardContent>
         </Card>
 

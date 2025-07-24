@@ -195,14 +195,9 @@ const Savings = () => {
 
       {/* Overview Card */}
       <Card
-        className="rounded-2xl shadow-2xl bg-white/80 dark:bg-black/60 backdrop-blur-lg border border-primary/20 relative"
+        className="rounded-2xl shadow-lg border border-primary/30 relative transition-all hover:shadow-2xl focus-within:ring-2 focus-within:ring-primary/60 mb-8"
         style={{
           background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
-          boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
-          borderRadius: '1.25rem',
-          marginBottom: '2rem',
-          position: 'relative',
-          zIndex: 1,
           overflow: 'hidden',
         }}
       >
@@ -247,7 +242,7 @@ const Savings = () => {
             const timeLeft = Math.ceil((new Date(goal.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
             return (
-              <Card key={goal.id} className="overflow-hidden rounded-2xl shadow bg-background/80">
+              <Card key={goal.id} className="overflow-hidden rounded-2xl shadow-md border border-border bg-background/80 transition-all hover:shadow-xl focus-within:ring-2 focus-within:ring-primary/60">
                 <CardContent className="p-6 text-foreground">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -289,7 +284,7 @@ const Savings = () => {
                   </div>
 
                   <div className="flex gap-2 mt-4">
-                    <Button variant="outline" className="flex-1 rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60" onClick={() => { setSelectedGoal(goal); setShowAddMoney(true); }}>
+                    <Button variant="outline" className="flex-1 rounded-lg border-primary/30 shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/60" onClick={() => { setSelectedGoal(goal); setShowAddMoney(true); }}>
                       <DollarSign className="h-4 w-4 mr-2" />
                       {t('savings.addMoney')}
                     </Button>
