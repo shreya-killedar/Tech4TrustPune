@@ -21,6 +21,7 @@ import {
 import { sampleUser, languages, countries } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 function getAuthUser() {
   return JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -31,6 +32,7 @@ function setAuthUser(user: any) {
 }
 
 const Settings = () => {
+  const { t } = useTranslation();
   const authUser = getAuthUser();
   const [profile, setProfile] = useState({
     name: authUser.name || sampleUser.name,
@@ -84,26 +86,30 @@ const Settings = () => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  const prevCurrency = authUser.currency;
   const handleSaveProfile = () => {
     setAuthUser({ ...authUser, ...profile });
     toast({
-      title: "Profile Updated",
-      description: "Your profile information has been saved successfully",
+      title: t('settings.profileUpdatedTitle'),
+      description: t('settings.profileUpdatedDescription'),
     });
+    if (prevCurrency !== profile.currency) {
+      window.dispatchEvent(new Event('currency-changed'));
+    }
     window.location.reload(); // To update top bar/profile everywhere
   };
 
   const handleSaveNotifications = () => {
     toast({
-      title: "Notification Settings Updated",
-      description: "Your notification preferences have been saved",
+      title: t('settings.notificationSettingsUpdatedTitle'),
+      description: t('settings.notificationSettingsUpdatedDescription'),
     });
   };
 
   const handleSaveSecurity = () => {
     toast({
-      title: "Security Settings Updated",
-      description: "Your security preferences have been saved",
+      title: t('settings.securitySettingsUpdatedTitle'),
+      description: t('settings.securitySettingsUpdatedDescription'),
     });
   };
 
@@ -129,16 +135,16 @@ const Settings = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span>Theme</span>
+            <span>{t('settings.theme')}</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
-          <span className="font-medium">Light</span>
+          <span className="font-medium">{t('settings.light')}</span>
           <Switch
             checked={theme === 'light'}
             onCheckedChange={(checked) => setTheme(checked ? 'light' : 'dark')}
           />
-          <span className="font-medium">Dark</span>
+          <span className="font-medium">{t('settings.dark')}</span>
         </CardContent>
       </Card>
 
@@ -147,7 +153,7 @@ const Settings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Profile Information
+            {t('settings.profileInformation')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -159,18 +165,18 @@ const Settings = () => {
             <div>
               <Button variant="outline" size="sm">
                 <Camera className="h-4 w-4 mr-2" />
-                Change Photo
+                {t('settings.changePhoto')}
               </Button>
-              <p className="text-sm text-muted-foreground mt-1">Photo hint</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('settings.photoHint')}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{t('settings.fullName')}</Label>
               <Input
                 id="name"
-                placeholder="Enter your full name"
+                placeholder={t('settings.enterFullName')}
                 className="placeholder-white text-white bg-card"
                 value={profile.name}
                 onChange={(e) => setProfile({...profile, name: e.target.value})}
@@ -178,11 +184,11 @@ const Settings = () => {
             </div>
 
             <div>
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">{t('settings.emailAddress')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email address"
+                placeholder={t('settings.enterEmailAddress')}
                 className="placeholder-white text-white bg-card"
                 value={profile.email}
                 onChange={(e) => setProfile({...profile, email: e.target.value})}
@@ -191,10 +197,10 @@ const Settings = () => {
             </div>
 
             <div>
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t('settings.phoneNumber')}</Label>
               <Input
                 id="phone"
-                placeholder="Enter your phone number"
+                placeholder={t('settings.enterPhoneNumber')}
                 className="placeholder-white text-white bg-card"
                 value={profile.phone}
                 onChange={(e) => setProfile({...profile, phone: e.target.value})}
@@ -202,10 +208,10 @@ const Settings = () => {
             </div>
 
             <div>
-              <Label htmlFor="country">Country</Label>
+              <Label htmlFor="country">{t('settings.country')}</Label>
               <Input
                 id="country"
-                placeholder="Enter your country"
+                placeholder={t('settings.enterCountry')}
                 className="placeholder-white text-white bg-card"
                 value={profile.country}
                 onChange={(e) => setProfile({...profile, country: e.target.value})}
@@ -213,23 +219,25 @@ const Settings = () => {
             </div>
 
             <div>
-              <Label htmlFor="currency">Currency</Label>
+              <Label htmlFor="currency">{t('settings.currency')}</Label>
               <Select value={profile.currency} onValueChange={(value) => setProfile({...profile, currency: value})}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {countries.map((country) => (
-                    <SelectItem key={country.currency} value={country.currency}>
-                      {country.currency} - {country.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem key="USD" value="USD">USD - US Dollar</SelectItem>
+                  {Array.from(new Set(countries.map(c => c.currency))).filter(cur => cur !== 'USD').map((cur) => {
+                    const country = countries.find(c => c.currency === cur);
+                    return (
+                      <SelectItem key={cur} value={cur}>{cur} - {country?.name || cur}</SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="md:col-span-2">
-              <Label htmlFor="language">Preferred Language</Label>
+              <Label htmlFor="language">{t('settings.preferredLanguage')}</Label>
               <Select value={profile.language} onValueChange={(value) => setProfile({...profile, language: value})}>
                 <SelectTrigger>
                   <SelectValue />
@@ -249,7 +257,7 @@ const Settings = () => {
           </div>
 
           <Button onClick={handleSaveProfile} className="w-full md:w-auto">
-            Save Profile Changes
+            {t('settings.saveProfileChanges')}
           </Button>
         </CardContent>
       </Card>
@@ -259,15 +267,15 @@ const Settings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Security & Privacy
+            {t('settings.securityPrivacy')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Biometric Login</p>
-                <p className="text-sm text-muted-foreground">Enable biometric login for enhanced security.</p>
+                <p className="font-medium">{t('settings.biometricLogin')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.biometricLoginHint')}</p>
               </div>
               <Switch
                 checked={security.biometricLogin}
@@ -279,8 +287,8 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Two-Factor Authentication</p>
-                <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+                <p className="font-medium">{t('settings.twoFactorAuth')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.twoFactorAuthHint')}</p>
               </div>
               <Switch
                 checked={security.twoFactorAuth}
@@ -292,8 +300,8 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Login Alerts</p>
-                <p className="text-sm text-muted-foreground">Receive notifications for suspicious login attempts.</p>
+                <p className="font-medium">{t('settings.loginAlerts')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.loginAlertsHint')}</p>
               </div>
               <Switch
                 checked={security.loginAlerts}
@@ -305,16 +313,16 @@ const Settings = () => {
           <div className="space-y-3">
             <Button variant="outline" className="w-full justify-start">
               <Smartphone className="h-4 w-4 mr-2" />
-              Change PIN
+              {t('settings.changePIN')}
             </Button>
             <Button variant="outline" className="w-full justify-start">
               <Shield className="h-4 w-4 mr-2" />
-              Change Password
+              {t('settings.changePassword')}
             </Button>
           </div>
 
           <Button onClick={handleSaveSecurity} className="w-full md:w-auto">
-            Save Security Settings
+            {t('settings.saveSecuritySettings')}
           </Button>
         </CardContent>
       </Card>
@@ -324,15 +332,15 @@ const Settings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Notifications
+            {t('settings.notifications')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Push Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive notifications on your device.</p>
+                <p className="font-medium">{t('settings.pushNotifications')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.pushNotificationsHint')}</p>
               </div>
               <Switch
                 checked={notifications.pushNotifications}
@@ -344,8 +352,8 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Email Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive email alerts for important updates.</p>
+                <p className="font-medium">{t('settings.emailNotifications')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.emailNotificationsHint')}</p>
               </div>
               <Switch
                 checked={notifications.emailNotifications}
@@ -357,8 +365,8 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">SMS Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive SMS alerts for important updates.</p>
+                <p className="font-medium">{t('settings.smsNotifications')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.smsNotificationsHint')}</p>
               </div>
               <Switch
                 checked={notifications.smsNotifications}
@@ -370,8 +378,8 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Transaction Alerts</p>
-                <p className="text-sm text-muted-foreground">Receive alerts for new transactions.</p>
+                <p className="font-medium">{t('settings.transactionAlerts')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.transactionAlertsHint')}</p>
               </div>
               <Switch
                 checked={notifications.transactionAlerts}
@@ -383,8 +391,8 @@ const Settings = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Promotional Emails</p>
-                <p className="text-sm text-muted-foreground">Receive promotional emails from us.</p>
+                <p className="font-medium">{t('settings.promotionalEmails')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.promotionalEmailsHint')}</p>
               </div>
               <Switch
                 checked={notifications.promotionalEmails}
@@ -394,7 +402,7 @@ const Settings = () => {
           </div>
 
           <Button onClick={handleSaveNotifications} className="w-full md:w-auto">
-            Save Notification Settings
+            {t('settings.saveNotificationSettings')}
           </Button>
         </CardContent>
       </Card>
@@ -404,7 +412,7 @@ const Settings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Payment Methods
+            {t('settings.paymentMethods')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -414,10 +422,10 @@ const Settings = () => {
                 <CreditCard className="h-6 w-6 text-primary" />
                 <div>
                   <p className="font-medium">•••• •••• •••• 4532</p>
-                  <p className="text-sm text-muted-foreground">Expires</p>
+                  <p className="text-sm text-muted-foreground">{t('settings.expires')}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">Edit</Button>
+              <Button variant="outline" size="sm">{t('settings.edit')}</Button>
             </div>
 
             <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -425,14 +433,14 @@ const Settings = () => {
                 <CreditCard className="h-6 w-6 text-primary" />
                 <div>
                   <p className="font-medium">Wells Fargo ••••3456</p>
-                  <p className="text-sm text-muted-foreground">Checking Account</p>
+                  <p className="text-sm text-muted-foreground">{t('settings.checkingAccount')}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">Edit</Button>
+              <Button variant="outline" size="sm">{t('settings.edit')}</Button>
             </div>
           </div>
 
-          <Button variant="outline" className="w-full">Add New Payment Method</Button>
+          <Button variant="outline" className="w-full">{t('settings.addNewPaymentMethod')}</Button>
         </CardContent>
       </Card>
 
@@ -441,35 +449,39 @@ const Settings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            App Preferences
+            {t('settings.appPreferences')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="currency">Default Currency</Label>
-              <Select defaultValue="USD">
+              <Select value={profile.currency} onValueChange={(value) => setProfile({...profile, currency: value})}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem key="USD" value="USD">USD - US Dollar</SelectItem>
+                  {Array.from(new Set(countries.map(c => c.currency))).filter(cur => cur !== 'USD').map((cur) => {
+                    const country = countries.find(c => c.currency === cur);
+                    return (
+                      <SelectItem key={cur} value={cur}>{cur} - {country?.name || cur}</SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="timezone">Timezone</Label>
+              <Label htmlFor="timezone">{t('settings.timezone')}</Label>
               <Select defaultValue="EST">
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EST">Eastern Time</SelectItem>
-                  <SelectItem value="PST">Pacific Time</SelectItem>
-                  <SelectItem value="GMT">Greenwich Mean Time</SelectItem>
+                  <SelectItem value="EST">{t('settings.easternTime')}</SelectItem>
+                  <SelectItem value="PST">{t('settings.pacificTime')}</SelectItem>
+                  <SelectItem value="GMT">{t('settings.greenwichMeanTime')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -480,25 +492,25 @@ const Settings = () => {
       {/* Account Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Account Actions</CardTitle>
+          <CardTitle>{t('settings.accountActions')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <Button variant="outline" className="w-full justify-start">
-              Download Account Data
+              {t('settings.downloadAccountData')}
             </Button>
             <Button variant="outline" className="w-full justify-start">
-              Contact Support
+              {t('settings.contactSupport')}
             </Button>
             <Button variant="outline" className="w-full justify-start">
-              Terms & Privacy Policy
+              {t('settings.termsPrivacyPolicy')}
             </Button>
             
             <Separator />
             
             <Button variant="destructive" className="w-full justify-start" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              {t('settings.signOut')}
             </Button>
           </div>
         </CardContent>

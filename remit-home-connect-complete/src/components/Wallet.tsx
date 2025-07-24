@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import {
   TrendingUp
 } from 'lucide-react';  
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 interface WalletProps {
@@ -70,20 +71,23 @@ function updateUserBalance(email: string, newBalance: number) {
 }
 
 const Wallet = ({ onNavigate }: WalletProps) => {
+  const location = useLocation();
+  const initialTab = location.state?.tab || 'transactions';
   const [showBalance, setShowBalance] = useState(true);
   const [addAmount, setAddAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [balance, setBalance] = useState(0);
-  const [tab, setTab] = useState('transactions');
+  const [tab, setTab] = useState(initialTab);
   const [transactions, setTransactions] = useState<any[]>([]);
   const { toast } = useToast();
   const user = getAuthUser();
   const userEmail = getUserEmail();
-  const userCurrency = user.currency || 'USD';
+  const [userCurrency, setUserCurrency] = useState(user.currency || 'USD');
   const [recipients, setRecipients] = useState(() => JSON.parse(localStorage.getItem(`recipients_${userEmail}`) || '[]'));
   const [insurance, setInsurance] = useState(() => JSON.parse(localStorage.getItem(`insurance_${userEmail}`) || '[]'));
   const [savings, setSavings] = useState(() => JSON.parse(localStorage.getItem(`savings_${userEmail}`) || '[]'));
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState('transactions');
   const [managerOpen, setManagerOpen] = useState(false);
 
@@ -114,9 +118,16 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       if (userEmail) setTransactions(getTransactions(userEmail));
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for currency-changed event
+    const onCurrencyChanged = () => {
+      const user = getAuthUser();
+      setUserCurrency(user.currency || 'USD');
+    };
+    window.addEventListener('currency-changed', onCurrencyChanged);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('currency-changed', onCurrencyChanged);
     };
   }, [userEmail]);
 
@@ -140,8 +151,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       });
       setTransactions(getTransactions(userEmail));
       toast({
-        title: 'Money Added Successfully!',
-        description: `${userCurrency} ${amt} has been added to your wallet`,
+        title: t('wallet.moneyAddedSuccessfully'),
+        description: `${userCurrency} ${amt} ${t('wallet.hasBeenAddedToYourWallet')}`,
       });
       setAddAmount('');
       setTab('transactions');
@@ -170,8 +181,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
       });
       setTransactions(getTransactions(userEmail));
       toast({
-        title: 'Withdrawal Initiated!',
-        description: `${userCurrency} ${amt} withdrawal request submitted`,
+        title: t('wallet.withdrawalInitiated'),
+        description: `${userCurrency} ${amt} ${t('wallet.withdrawalRequestSubmitted')}`,
       });
       setWithdrawAmount('');
       setTab('transactions');
@@ -209,8 +220,8 @@ const Wallet = ({ onNavigate }: WalletProps) => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">My Wallet</h1>
-          <p className="text-muted-foreground">Manage your digital wallet</p>
+          <h1 className="text-2xl font-bold">{t('wallet.myWallet')}</h1>
+          <p className="text-muted-foreground">{t('wallet.manageDigitalWallet')}</p>
         </div>
       </div>
 
@@ -298,14 +309,14 @@ const Wallet = ({ onNavigate }: WalletProps) => {
           className={`h-20 flex-col gap-2 ${selectedTab === 'add-money' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <Plus className="h-6 w-6" />
-          <span>Add Money</span>
+          <span>{t('wallet.addMoney')}</span>
         </Button>
         <Button
           onClick={() => setSelectedTab('withdraw')}
           className={`h-20 flex-col gap-2 ${selectedTab === 'withdraw' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowDownLeft className="h-6 w-6" />
-          <span>Withdraw</span>
+          <span>{t('wallet.withdraw')}</span>
         </Button>
       </div>
 
@@ -315,11 +326,11 @@ const Wallet = ({ onNavigate }: WalletProps) => {
         <div className="bg-card p-6 rounded-xl shadow">
           <Card>
             <CardHeader>
-              <CardTitle>Add Money to Wallet</CardTitle>
+              <CardTitle>{t('wallet.addMoneyToWallet')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="add-amount">Amount ({userCurrency})</Label>
+                <Label htmlFor="add-amount">{t('wallet.amount', { currency: userCurrency })}</Label>
                 <Input
                   id="add-amount"
                   type="number"
@@ -329,33 +340,33 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                 />
               </div>
               <div className="space-y-4">
-                <h3 className="font-medium">Payment Methods</h3>
+                <h3 className="font-medium">{t('wallet.paymentMethods')}</h3>
                 <div className="space-y-3">
                   <div className="p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
                     <div className="flex items-center gap-3">
                       <CreditCard className="h-6 w-6 text-primary" />
                       <div className="flex-1">
-                        <p className="font-medium">Credit/Debit Card</p>
-                        <p className="text-sm text-muted-foreground">••••4532</p>
+                        <p className="font-medium">{t('wallet.creditDebitCard')}</p>
+                        <p className="text-sm text-muted-foreground">{t('wallet.creditCardLastFour')}</p>
                       </div>
-                      <Badge variant="default">Instant</Badge>
+                      <Badge variant="default">{t('wallet.instant')}</Badge>
                     </div>
                   </div>
                   <div className="p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
                     <div className="flex items-center gap-3">
                       <Banknote className="h-6 w-6 text-primary" />
                       <div className="flex-1">
-                        <p className="font-medium">Bank Transfer</p>
-                        <p className="text-sm text-muted-foreground">Wells Fargo ••••3456</p>
+                        <p className="font-medium">{t('wallet.bankTransfer')}</p>
+                        <p className="text-sm text-muted-foreground">{t('wallet.wellsFargoLastFour')}</p>
                       </div>
-                      <Badge variant="secondary">1-2 days</Badge>
+                      <Badge variant="secondary">{t('wallet.oneTwoDays')}</Badge>
                     </div>
                   </div>
                 </div>
               </div>
               <Button onClick={handleAddMoney} className="w-full" disabled={!addAmount || parseFloat(addAmount) <= 0}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add {userCurrency} {addAmount || '0'} to Wallet
+                {t('wallet.addAmountToWallet', { currency: userCurrency, amount: addAmount || '0' })}
               </Button>
             </CardContent>
           </Card>
@@ -365,11 +376,11 @@ const Wallet = ({ onNavigate }: WalletProps) => {
         <div className="bg-card p-6 rounded-xl shadow">
           <Card>
             <CardHeader>
-              <CardTitle>Withdraw Money</CardTitle>
+              <CardTitle>{t('wallet.withdrawMoney')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="withdraw-amount">Amount ({userCurrency})</Label>
+                <Label htmlFor="withdraw-amount">{t('wallet.amount', { currency: userCurrency })}</Label>
                 <Input
                   id="withdraw-amount"
                   type="number"
@@ -378,29 +389,29 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                   onChange={(e) => setWithdrawAmount(e.target.value)}
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Available balance: {userCurrency} {balance.toLocaleString()}
+                  {t('wallet.availableBalance', { currency: userCurrency, balance: balance.toLocaleString() })}
                 </p>
               </div>
               <div className="space-y-4">
-                <h3 className="font-medium">Withdrawal Method</h3>
+                <h3 className="font-medium">{t('wallet.withdrawalMethod')}</h3>
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <Banknote className="h-6 w-6 text-primary" />
                     <div className="flex-1">
-                      <p className="font-medium">Bank Account</p>
-                      <p className="text-sm text-muted-foreground">Wells Fargo ••••3456</p>
+                      <p className="font-medium">{t('wallet.bankAccount')}</p>
+                      <p className="text-sm text-muted-foreground">{t('wallet.wellsFargoLastFour')}</p>
                     </div>
-                    <Badge variant="secondary">1-3 days</Badge>
+                    <Badge variant="secondary">{t('wallet.oneThreeDays')}</Badge>
                   </div>
                 </div>
               </div>
               <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">Withdrawal Information</h4>
+                <h4 className="font-medium mb-2">{t('wallet.withdrawalInformation')}</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Minimum withdrawal: $10</li>
-                  <li>• Processing time: 1-3 business days</li>
-                  <li>• No withdrawal fees</li>
-                  <li>• Available 24/7</li>
+                  <li>• {t('wallet.minimumWithdrawal', { currency: userCurrency, amount: 10 })}</li>
+                  <li>• {t('wallet.processingTime', { time: 1, unit: 3, businessDays: 'business days' })}</li>
+                  <li>• {t('wallet.noWithdrawalFees')}</li>
+                  <li>• {t('wallet.available247')}</li>
                 </ul>
               </div>
               <Button 
@@ -409,7 +420,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
                 disabled={!withdrawAmount || parseFloat(withdrawAmount) > balance || parseFloat(withdrawAmount) < 10}
               >
                 <ArrowDownLeft className="h-4 w-4 mr-2" />
-                Withdraw {userCurrency} {withdrawAmount || '0'}
+                {t('wallet.withdrawAmount', { currency: userCurrency, amount: withdrawAmount || '0' })}
               </Button>
             </CardContent>
           </Card>

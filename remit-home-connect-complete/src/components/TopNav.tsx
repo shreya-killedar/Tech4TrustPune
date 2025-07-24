@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, Globe, Menu, X, Sun, Moon } from 'lucide-react';
 import { languages } from '@/lib/data';
 import { useNavigate } from 'react-router-dom';
+import i18n from '../i18n';
+import { useTranslation } from 'react-i18next';
 
 function getAuthUser() {
   return JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -19,6 +21,7 @@ function getUserNotifications(email: string) {
 }
 
 const TopNav = () => {
+  const { t } = useTranslation();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -66,6 +69,19 @@ const TopNav = () => {
   const currentLanguage = languages.find(lang => lang.code === selectedLanguage);
   const userInitial = user.name ? user.name[0].toUpperCase() : '?';
 
+  const handleLanguageChange = (lang: string) => {
+    setSelectedLanguage(lang);
+    i18n.changeLanguage(lang);
+    // Update user language in localStorage
+    const user = getAuthUser();
+    if (user && user.email) {
+      const updatedUser = { ...user, language: lang };
+      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      // Optionally, trigger a reload or event if you want to update everywhere
+      window.dispatchEvent(new Event('wallet-balance-updated'));
+    }
+  };
+
   return (
     <nav className="hidden md:flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-50">
       {/* Logo */}
@@ -73,18 +89,18 @@ const TopNav = () => {
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
           <span className="text-white font-bold text-sm">RC</span>
         </div>
-        <h1 className="text-xl font-bold text-primary">RemitConnect</h1>
+        <h1 className="text-xl font-bold text-primary">Tech4Trust</h1>
       </div>
 
       {/* Navigation Links */}
       <div className="flex items-center gap-1">
         {[
-          { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
-          { id: 'send', label: 'Send Money', path: '/dashboard/send' },
-          { id: 'wallet', label: 'Wallet', path: '/dashboard/wallet' },
-          { id: 'savings', label: 'Savings', path: '/dashboard/savings' },
-          { id: 'insurance', label: 'Insurance', path: '/dashboard/insurance' },
-          { id: 'settings', label: 'Settings', path: '/dashboard/settings' }
+          { id: 'dashboard', label: t('dashboard.dashboard'), path: '/dashboard' },
+          { id: 'send', label: t('dashboard.sendMoney'), path: '/dashboard/send' },
+          { id: 'wallet', label: t('dashboard.wallet'), path: '/dashboard/wallet' },
+          { id: 'savings', label: t('dashboard.savings'), path: '/dashboard/savings' },
+          { id: 'insurance', label: t('dashboard.insurance'), path: '/dashboard/insurance' },
+          { id: 'settings', label: t('dashboard.settings'), path: '/dashboard/settings' }
         ].map((item) => (
           <Button
             key={item.id}
@@ -110,6 +126,26 @@ const TopNav = () => {
         >
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
+
+         <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+          <SelectTrigger className="w-32">
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span>{currentLanguage?.flag}</span>
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {languages.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code}>
+                <div className="flex items-center gap-2">
+                  <span>{lang.flag}</span>
+                  <span>{lang.name}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
         {/* Notifications */}
         <div className="relative">
           <Button variant="ghost" size="sm" className="relative" onClick={() => setShowNotifications(v => !v)}>
@@ -131,8 +167,16 @@ const TopNav = () => {
                 transition: 'all 0.2s cubic-bezier(.4,0,.2,1)'
               }}
             >
-              <div className="p-3 border-b font-semibold" style={{ borderColor: 'hsl(var(--border))' }}>
-                Payment & Insurance Notifications
+              
+              <div className="flex items-center justify-between p-3 border-b font-semibold">
+                <span>Payment Notifications</span>
+                <button
+                  className="p-1 rounded hover:bg-gray-100 focus:outline-none"
+                  onClick={() => setShowNotifications(false)}
+                  aria-label="Close notifications"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
               {notifications.length === 0 && insuranceNotifications.length === 0 && (
                 <div className="p-3 text-muted-foreground">No notifications</div>

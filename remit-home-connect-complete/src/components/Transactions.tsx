@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+
 
 const getUserCurrency = () => {
   try {
@@ -19,9 +22,12 @@ const getUserEmail = () => {
 };
 
 const Transactions = () => {
-  const userCurrency = getUserCurrency();
+  const { t } = useTranslation();
+  const [userCurrency, setUserCurrency] = useState(getUserCurrency());
   const userEmail = getUserEmail();
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
+
 
   useEffect(() => {
     if (userEmail) {
@@ -36,7 +42,15 @@ const Transactions = () => {
       }
     };
     window.addEventListener('wallet-balance-updated', onWalletUpdate);
-    return () => window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+    // Listen for currency-changed event
+    const onCurrencyChanged = () => {
+      setUserCurrency(getUserCurrency());
+    };
+    window.addEventListener('currency-changed', onCurrencyChanged);
+    return () => {
+      window.removeEventListener('wallet-balance-updated', onWalletUpdate);
+      window.removeEventListener('currency-changed', onCurrencyChanged);
+    };
   }, [userEmail]);
 
   const formatCurrency = (value: number, currency: string) => {
@@ -58,16 +72,37 @@ const Transactions = () => {
         </thead>
         <tbody>
           {transactions.length === 0 && (
-            <tr><td colSpan={5} className="p-2 text-center text-muted-foreground">No transactions found</td></tr>
+            <tr><td colSpan={5} className="p-2 text-center text-muted-foreground">{t('transactions.noTransactionsFound')}</td></tr>
           )}
           {transactions.map(tx => (
-            <tr key={tx.id} className="border-t">
-              <td className="p-2 capitalize">{tx.type}</td>
-              <td className="p-2">{formatCurrency(tx.amount, userCurrency)}</td>
-              <td className="p-2">{tx.recipient || '-'}</td>
-              <td className="p-2">{tx.date}</td>
-              <td className="p-2">{tx.status || 'Completed'}</td>
-            </tr>
+            <Dialog key={tx.id}>
+            <DialogTrigger asChild>
+              <tr className="border-t cursor-pointer hover:bg-muted/30" onClick={() => setSelectedTx(tx)}>
+                <td className="p-2 capitalize">{t(`transactions.${tx.type}`)}</td>
+                <td className="p-2">{formatCurrency(tx.amount, userCurrency)}</td>
+                <td className="p-2">{tx.recipient || '-'}</td>
+                <td className="p-2">{tx.date}</td>
+                <td className="p-2">{tx.status || t('transactions.completed')}</td>
+              </tr>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t('transactions.transactionSummary')}</DialogTitle>
+                <DialogDescription>
+                  <div className="space-y-2 mt-2">
+                    <div><b>{t('transactions.type')}:</b> {t(`transactions.${tx.type}`)}</div>
+                    <div><b>{t('transactions.amount')}:</b> {formatCurrency(tx.amount, userCurrency)}</div>
+                    <div><b>{t('transactions.toFrom')}:</b> {tx.recipient || '-'}</div>
+                    <div><b>{t('transactions.date')}:</b> {tx.date}</div>
+                    <div><b>{t('transactions.status')}:</b> {tx.status || t('transactions.completed')}</div>
+                    {tx.fee !== undefined && <div><b>{t('transactions.fee')}:</b> {formatCurrency(tx.fee, userCurrency)}</div>}
+                    {tx.exchangeRate !== undefined && <div><b>{t('transactions.exchangeRate')}:</b> {tx.exchangeRate}</div>}
+                    {tx.recipientCountry && <div><b>{t('transactions.recipientCountry')}:</b> {tx.recipientCountry}</div>}
+                  </div>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
           ))}
         </tbody>
       </table>
