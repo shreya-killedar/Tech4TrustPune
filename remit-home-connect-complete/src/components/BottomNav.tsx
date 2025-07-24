@@ -1,4 +1,4 @@
-import { Home, Send, Wallet, PiggyBank, Shield, Settings as SettingsIcon } from 'lucide-react';
+import { Home, Send, Wallet, PiggyBank, Shield, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const BottomNav = () => {
@@ -9,6 +9,7 @@ const BottomNav = () => {
     { id: 'wallet', label: 'Wallet', icon: Wallet, path: '/dashboard/wallet' },
     { id: 'savings', label: 'Savings', icon: PiggyBank, path: '/dashboard/savings' },
     { id: 'insurance', label: 'Insurance', icon: Shield, path: '/dashboard/insurance' },
+    { id: 'faq', label: 'FAQ', icon: HelpCircle, path: '/dashboard/faq' },
     { id: 'settings', label: 'Settings', icon: SettingsIcon, path: '/dashboard/settings' }
   ];
 

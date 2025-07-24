@@ -60,98 +60,134 @@ const TopNav = () => {
     }
   };
 
+  // Build navLinks so FAQ is always after Insurance
+  const navLinks = [
+    { id: 'dashboard', label: t('dashboard.dashboard'), path: '/dashboard' },
+    { id: 'send', label: t('dashboard.sendMoney'), path: '/dashboard/send' },
+    { id: 'wallet', label: t('dashboard.wallet'), path: '/dashboard/wallet' },
+    { id: 'savings', label: t('dashboard.savings'), path: '/dashboard/savings' },
+    { id: 'insurance', label: t('dashboard.insurance'), path: '/dashboard/insurance' },
+    // FAQ always after insurance
+    { id: 'faq', label: 'FAQ', path: '/dashboard/faq' },
+    { id: 'settings', label: t('dashboard.settings'), path: '/dashboard/settings' }
+  ];
+
   return (
-    <nav className="hidden md:flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-50">
-      {/* Logo */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-white font-bold text-sm">RC</span>
-        </div>
-        <h1 className="text-xl font-bold text-primary">RemitConnect</h1>
-      </div>
-
-      {/* Navigation Links */}
-      <div className="flex items-center gap-1">
-        {[
-          { id: 'dashboard', label: t('dashboard.dashboard'), path: '/dashboard' },
-          { id: 'send', label: t('dashboard.sendMoney'), path: '/dashboard/send' },
-          { id: 'wallet', label: t('dashboard.wallet'), path: '/dashboard/wallet' },
-          { id: 'savings', label: t('dashboard.savings'), path: '/dashboard/savings' },
-          { id: 'insurance', label: t('dashboard.insurance'), path: '/dashboard/insurance' },
-          { id: 'settings', label: t('dashboard.settings'), path: '/dashboard/settings' }
-        ].map((item) => (
-          <Button
-            key={item.id}
-            variant={window.location.pathname === item.path ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => navigate(item.path)}
-            className="px-4"
-          >
-            {item.label}
-          </Button>
-        ))}
-      </div>
-
-      {/* Right Actions */}
-      <div className="flex items-center gap-3 relative">
-        {/* Language Selector */}
-        <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-          <SelectTrigger className="w-32">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              <span>{currentLanguage?.flag}</span>
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {languages.map((lang) => (
-              <SelectItem key={lang.code} value={lang.code}>
-                <div className="flex items-center gap-2">
-                  <span>{lang.flag}</span>
-                  <span>{lang.name}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Notifications */}
-        <div className="relative">
-          <Button variant="ghost" size="sm" className="relative" onClick={() => setShowNotifications(v => !v)}>
-            <Bell className="h-5 w-5" />
-            {notifications.length > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs">
-                {notifications.length}
-              </Badge>
-            )}
-          </Button>
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto text-black">
-              <div className="p-3 border-b font-semibold">Payment Notifications</div>
-              {notifications.length === 0 && <div className="p-3 text-muted-foreground">No notifications</div>}
-              {notifications.map((tx, idx) => (
-                <div key={tx.id || idx} className="p-3 border-b last:border-b-0">
-                  <div className="font-medium capitalize">{tx.type === 'send' ? `Sent to ${tx.recipient}` : `Received`}</div>
-                  <div className="text-xs text-muted-foreground">{tx.date} · {tx.currency} {tx.amount}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Profile */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/dashboard/settings')}
-          className="flex items-center gap-2"
-        >
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-sm font-medium">
-            {userInitial}
+    <>
+      {/* Desktop Nav */}
+      <nav className="hidden md:flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-50">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span className="text-white font-bold text-sm">RC</span>
           </div>
-          <span className="text-sm font-medium">{user.name?.split(' ')[0]}</span>
+          <h1 className="text-xl font-bold text-primary">RemitConnect</h1>
+        </div>
+        {/* Navigation Links */}
+        <div className="flex items-center gap-1" style={{overflow: 'visible'}}>
+          {navLinks.map((item) => (
+            <Button
+              key={item.id}
+              variant={window.location.pathname === item.path ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => navigate(item.path)}
+              className={`px-4${item.id === 'faq' ? ' border-2 border-blue-500 bg-yellow-100 text-black' : ''}`}
+            >
+              {item.label}
+            </Button>
+          ))}
+        </div>
+        {/* Right Actions */}
+        <div className="flex items-center gap-3 relative">
+          {/* Language Selector */}
+          <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+            <SelectTrigger className="w-32">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                <span>{currentLanguage?.flag}</span>
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {languages.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code}>
+                  <div className="flex items-center gap-2">
+                    <span>{lang.flag}</span>
+                    <span>{lang.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Notifications */}
+          <div className="relative">
+            <Button variant="ghost" size="sm" className="relative" onClick={() => setShowNotifications(v => !v)}>
+              <Bell className="h-5 w-5" />
+              {notifications.length > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs">
+                  {notifications.length}
+                </Badge>
+              )}
+            </Button>
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto text-black">
+                <div className="p-3 border-b font-semibold">Payment Notifications</div>
+                {notifications.length === 0 && <div className="p-3 text-muted-foreground">No notifications</div>}
+                {notifications.map((tx, idx) => (
+                  <div key={tx.id || idx} className="p-3 border-b last:border-b-0">
+                    <div className="font-medium capitalize">{tx.type === 'send' ? `Sent to ${tx.recipient}` : `Received`}</div>
+                    <div className="text-xs text-muted-foreground">{tx.date} · {tx.currency} {tx.amount}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Profile */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/dashboard/settings')}
+            className="flex items-center gap-2"
+          >
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-sm font-medium">
+              {userInitial}
+            </div>
+            <span className="text-sm font-medium">{user.name?.split(' ')[0]}</span>
+          </Button>
+        </div>
+      </nav>
+      {/* Mobile Nav */}
+      <nav className="flex md:hidden items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-50">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span className="text-white font-bold text-sm">RC</span>
+          </div>
+          <h1 className="text-xl font-bold text-primary">RemitConnect</h1>
+        </div>
+        {/* Mobile Menu Button */}
+        <Button variant="ghost" size="icon" onClick={() => setShowMobileMenu(v => !v)}>
+          {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
-      </div>
-    </nav>
+        {/* Mobile Menu Drawer */}
+        {showMobileMenu && (
+          <div className="absolute top-16 left-0 w-full bg-card border-b border-border z-50 flex flex-col items-start p-4 gap-2 shadow-lg animate-fadeIn">
+            {navLinks.map((item) => (
+              <Button
+                key={item.id}
+                variant={window.location.pathname === item.path ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => { setShowMobileMenu(false); navigate(item.path); }}
+                className="w-full justify-start"
+              >
+                {item.label}
+              </Button>
+            ))}
+          </div>
+        )}
+      </nav>
+    </>
   );
 };
 

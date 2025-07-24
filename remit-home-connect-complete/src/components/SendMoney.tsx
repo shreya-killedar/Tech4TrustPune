@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Send, ArrowLeft, CreditCard, Banknote, Clock, Shield, CheckCircle } from 'lucide-react';
-import { countries, exchangeRates } from '@/lib/data';
+import { Send, ArrowLeft, CreditCard, Banknote, Clock, Shield, CheckCircle, PiggyBank } from 'lucide-react';
+import { countries, exchangeRates, savingsGoals as sampleSavingsGoals } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,7 @@ const SendMoney = () => {
   const [showAddNew, setShowAddNew] = useState(false);
   const [newRecipient, setNewRecipient] = useState({ name: '', account: '' });
   const [recipients, setRecipients] = useState<any[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<any[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const user = getAuthUser();
@@ -51,6 +52,12 @@ const SendMoney = () => {
   useEffect(() => {
     if (user.email) {
       setRecipients(getRecipients(user.email));
+      // Load savings goals from localStorage or fallback
+      let goals = JSON.parse(localStorage.getItem(`savingsGoals_${user.email}`) || 'null');
+      if (!goals || !Array.isArray(goals) || goals.length === 0) {
+        goals = sampleSavingsGoals;
+      }
+      setSavingsGoals(goals);
     }
     // Listen for wallet-balance-updated event for real-time sync
     const onWalletUpdate = () => {
@@ -304,6 +311,7 @@ const SendMoney = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
+              {/* Wallet payment method */}
               <div 
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
                   formData.paymentMethod === 'wallet' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
@@ -319,7 +327,7 @@ const SendMoney = () => {
                   <Badge variant="default">{t('sendMoney.instant')}</Badge>
                 </div>
               </div>
-
+              {/* Bank payment method */}
               <div 
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
                   formData.paymentMethod === 'bank' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
@@ -335,8 +343,26 @@ const SendMoney = () => {
                   <Badge variant="secondary">{t('sendMoney.bankTransfer')}</Badge>
                 </div>
               </div>
+              {/* Savings funds as payment methods */}
+              {savingsGoals.map(goal => (
+                <div
+                  key={goal.id}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                    formData.paymentMethod === `savings:${goal.id}` ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                  }`}
+                  onClick={() => setFormData({...formData, paymentMethod: `savings:${goal.id}`})}
+                >
+                  <div className="flex items-center gap-3">
+                    <PiggyBank className="h-6 w-6 text-warning" />
+                    <div className="flex-1">
+                      <p className="font-medium">{goal.name} (Savings Fund)</p>
+                      <p className="text-sm text-muted-foreground">Available: {userCurrency} {goal.currentAmount.toLocaleString()}</p>
+                    </div>
+                    <Badge variant="secondary">Savings</Badge>
+                  </div>
+                </div>
+              ))}
             </div>
-
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleBack} className="flex-1">{t('sendMoney.back')}</Button>
               <Button 

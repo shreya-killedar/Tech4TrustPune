@@ -16,6 +16,7 @@ import Transactions from "./components/Transactions";
 import Wallet from "./components/Wallet";
 import SendMoney from "./components/SendMoney";
 import DashboardLayout from "./components/DashboardLayout";
+import FAQ from "@/components/FAQ";
 
 const queryClient = new QueryClient();
 
@@ -51,11 +52,14 @@ const App = () => (
           <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/send" element={<SendMoney />} />
-            <Route path="/dashboard/wallet" element={<Wallet />} />
+            <Route path="/dashboard/wallet" element={<Wallet onNavigate={function (page: string): void {
+              throw new Error("Function not implemented.");
+            } } />} />
             <Route path="/dashboard/savings" element={<Savings />} />
             <Route path="/dashboard/insurance" element={<Insurance />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/transactions" element={<Transactions />} />
+            <Route path="/dashboard/faq" element={<FAQ />} />
           </Route>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFound />} />

@@ -15,33 +15,33 @@ const Index = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard onNavigate={setCurrentPage} />;
+        return <Dashboard />;
       case 'send':
-        return <SendMoney onNavigate={setCurrentPage} />;
+        return <SendMoney />;
       case 'wallet':
-        return <Wallet onNavigate={setCurrentPage} />;
+        return <Wallet />;
       case 'savings':
-        return <Savings onNavigate={setCurrentPage} />;
+        return <Savings />;
       case 'insurance':
-        return <Insurance onNavigate={setCurrentPage} />;
+        return <Insurance />;
       case 'settings':
-        return <Settings onNavigate={setCurrentPage} />;
+        return <Settings />;
       case 'transactions':
-        return <Transactions onNavigate={setCurrentPage} />;
+        return <Transactions />;
       default:
-        return <Dashboard onNavigate={setCurrentPage} />;
+        return <Dashboard />;
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <TopNav currentPage={currentPage} onNavigate={setCurrentPage} />
+      <TopNav />
       
       <main className="container mx-auto px-4 py-6 pb-20 md:pb-6">
         {renderPage()}
       </main>
 
-      <BottomNav currentPage={currentPage} onNavigate={setCurrentPage} />
+      <BottomNav />
     </div>
   );
 };
