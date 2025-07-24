@@ -168,6 +168,7 @@ const TopNav = () => {
               }}
             >
               
+            <div className="absolute right-0 mt-2 w-80 bg-white border rounded shadow-lg z-50 max-h-96 overflow-y-auto text-black">
               <div className="flex items-center justify-between p-3 border-b font-semibold">
                 <span>Payment Notifications</span>
                 <button
@@ -181,6 +182,8 @@ const TopNav = () => {
               {notifications.length === 0 && insuranceNotifications.length === 0 && (
                 <div className="p-3 text-muted-foreground">No notifications</div>
               )}
+
+              {notifications.length === 0 && <div className="p-3 text-muted-foreground">No notifications</div>}
               {notifications.map((tx, idx) => (
                 <div
                   key={tx.id || idx}
