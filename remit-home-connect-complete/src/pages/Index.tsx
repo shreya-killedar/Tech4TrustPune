@@ -3,8 +3,10 @@ import Login from '@/components/Login';
 import Register from '@/components/Register';
 import { Switch } from '@/components/ui/switch';
 import { Sun, Moon, HelpCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Index = () => {
+  const { t } = useTranslation();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
@@ -108,21 +110,17 @@ const Index = () => {
             <button className="absolute top-2 right-2 text-xl text-muted-foreground hover:text-primary" onClick={() => setShowHelp(false)}>&times;</button>
             <span className="flex items-center gap-2 mb-2">
               <img src="/favicon.ico" alt="CashBridge logo" className="w-7 h-7 rounded-full" />
-              <h2 className="text-2xl font-bold text-primary">About CashBridge</h2>
+              <h2 className="text-2xl font-bold text-primary">{t('misc.aboutTitle')}</h2>
             </span>
-            <p className="mb-4 text-muted-foreground">
-              CashBridge is your one-stop solution for digital finance: send money, manage your wallet, save for your dreams, and secure your future with insurance. Designed for speed, security, and a delightful user experience.
-            </p>
+            <p className="mb-4 text-muted-foreground">{t('misc.aboutDesc')}</p>
             <ul className="list-disc pl-5 space-y-1 text-foreground mb-4">
-              <li>Send and receive money instantly</li>
-              <li>Track your wallet and transaction history</li>
-              <li>Set and achieve savings goals</li>
-              <li>Get insurance protection for peace of mind</li>
-              <li>Modern, responsive, and theme-aware UI</li>
+              <li>{t('misc.aboutFeature1')}</li>
+              <li>{t('misc.aboutFeature2')}</li>
+              <li>{t('misc.aboutFeature3')}</li>
+              <li>{t('misc.aboutFeature4')}</li>
+              <li>{t('misc.aboutFeature5')}</li>
             </ul>
-            <div className="text-center">
-              <span className="text-muted-foreground">Need more help? Contact support@cashbridge.com</span>
-            </div>
+            <span className="text-muted-foreground">{t('misc.aboutHelp')}</span>
           </div>
         </div>
       )}

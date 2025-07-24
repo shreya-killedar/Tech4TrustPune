@@ -562,7 +562,7 @@ const SendMoney = () => {
               <Button variant="outline" onClick={handleBack} className="flex-1">{t('sendMoney.back')}</Button>
               <Button onClick={handleSend} className="flex-1">
                 <Send className="h-4 w-4 mr-2" />
-                Send Money
+                {t('sendMoney.sendMoney')}
               </Button>
             </div>
           </CardContent>

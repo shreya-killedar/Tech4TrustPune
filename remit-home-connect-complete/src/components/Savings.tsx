@@ -107,7 +107,7 @@ const Savings = () => {
       updateGoals(updated);
       toast({
         title: 'Savings Goal Created!',
-        description: `Your goal "${newGoal.name}" has been created successfully`,
+        description: `${t('savings.goalCreated', { name: newGoal.name })}`,
       });
       setNewGoal({ name: '', target: '', category: '', dueDate: '' });
     }
@@ -131,7 +131,7 @@ const Savings = () => {
         }
         toast({
           title: 'Money Saved!',
-          description: `${formatCurrency(amt)} added to your savings goal "${selectedGoal.name}"`,
+          description: `${t('savings.moneySaved', { amount: formatCurrency(amt), goalName: selectedGoal.name })}`,
         });
         setDepositAmount('');
         setShowAddMoney(false);
@@ -146,7 +146,7 @@ const Savings = () => {
       updateGoals(updated);
       toast({
         title: 'Goal Updated!',
-        description: `Your goal "${editGoalData.name}" has been updated.`,
+        description: `${t('savings.goalUpdated', { name: editGoalData.name })}`,
       });
       setShowEditGoal(false);
       setEditGoalData(null);
@@ -253,7 +253,7 @@ const Savings = () => {
                         {getCategoryIcon(goal.category)}
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg">{goal.name}</h3>
+                        <h3 className="font-bold text-lg">{t(goal.name)}</h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
                           <span>{timeLeft > 0 ? `${timeLeft} ${t('savings.daysLeft')}` : `${t('savings.overdue')}`}</span>
@@ -349,7 +349,7 @@ const Savings = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center ${getCategoryColor(goal.category)}`}>{getCategoryIcon(goal.category)}</div>
-                          <span className="font-medium">{goal.name}</span>
+                          <span className="font-medium">{t(goal.name)}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}

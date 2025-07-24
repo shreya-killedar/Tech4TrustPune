@@ -5,34 +5,34 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const QUESTIONS = [
   {
-    question: 'How do I send money?',
-    buttonLabel: 'Go to Send Money',
+    question: 'chatbotQuestions.q1',
+    buttonLabel: 'chatbotAnswers.b1',
     path: '/dashboard/send',
   },
   {
-    question: 'How can I view my transactions?',
-    buttonLabel: 'View Transactions',
+    question: 'chatbotQuestions.q2',
+    buttonLabel: 'chatbotAnswers.b2',
     path: '/dashboard/transactions',
   },
   {
-    question: 'How do I update my profile?',
-    buttonLabel: 'Update Profile',
+    question: 'chatbotQuestions.q3',
+    buttonLabel: 'chatbotAnswers.b3',
     path: '/dashboard/settings',
   },
   {
-    question: 'How do I check my savings?',
-    buttonLabel: 'Check Savings',
+    question: 'chatbotQuestions.q4',
+    buttonLabel: 'chatbotAnswers.b4',
     path: '/dashboard/savings',
   },
   {
-    question: 'How do I contact support?',
-    buttonLabel: 'Contact Support',
+    question: 'chatbotQuestions.q5',
+    buttonLabel: 'chatbotAnswers.b5',
     path: 'mailto:support@cashbridge.com',
     isMail: true,
   },
   {
-    question: 'How do I view FAQs?',
-    buttonLabel: 'View FAQ',
+    question: 'chatbotQuestions.q6',
+    buttonLabel: 'chatbotAnswers.b6',
     isFAQ: true,
   },
 ];
@@ -154,7 +154,7 @@ const ChatBot = () => {
                           className="w-full text-left px-4 py-3 rounded-xl bg-blue-100 dark:bg-blue-800 text-blue-900 dark:text-blue-100 font-medium shadow hover:bg-blue-200 dark:hover:bg-blue-700 transition"
                           onClick={() => setSelectedQuestion(idx)}
                         >
-                          {q.question}
+                          {t(q.question)}
                         </button>
                       </li>
                     ))}
@@ -177,7 +177,7 @@ const ChatBot = () => {
                     </button>
                   </div>
                   <div className="text-blue-900 dark:text-blue-100 text-lg font-semibold mb-6 text-center">
-                    {QUESTIONS[selectedQuestion].question}
+                    {t(QUESTIONS[selectedQuestion].question)}
                   </div>
                   {/* FAQ: show only one button that navigates to FAQ page */}
                   {QUESTIONS[selectedQuestion].isFAQ ? (
@@ -196,7 +196,7 @@ const ChatBot = () => {
                       className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
                       onClick={() => setOpen(false)}
                     >
-                      {QUESTIONS[selectedQuestion].buttonLabel}
+                      {t(QUESTIONS[selectedQuestion].buttonLabel)}
                     </a>
                   ) : (
                     <Link
@@ -204,7 +204,7 @@ const ChatBot = () => {
                       className="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition text-center w-full"
                       onClick={() => setOpen(false)}
                     >
-                      {QUESTIONS[selectedQuestion].buttonLabel}
+                      {t(QUESTIONS[selectedQuestion].buttonLabel)}
                     </Link>
                   )}
                 </div>

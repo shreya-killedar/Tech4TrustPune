@@ -374,7 +374,7 @@ const Insurance = () => {
         <TabsList className="grid w-full grid-cols-3 animate-fadeIn">
           <TabsTrigger value="my-insurance">{t('insurance.myInsurance')}</TabsTrigger>
           <TabsTrigger value="explore">{t('insurance.explorePlans')}</TabsTrigger>
-          <TabsTrigger value="claims">Claim History</TabsTrigger>
+          <TabsTrigger value="claims">{t('insurance.claimHistory')}</TabsTrigger>
         </TabsList>
 
         {/* My Insurance Tab */}
@@ -669,7 +669,7 @@ const Insurance = () => {
         <TabsContent value="claims" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Claim History</CardTitle>
+              <CardTitle>{t('insurance.claimHistory')}</CardTitle>
             </CardHeader>
             <CardContent>
               {claims.length === 0 && <div className="text-muted-foreground">No claims yet.</div>}

@@ -236,7 +236,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
         <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)'}} />
         <CardContent className="p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div>
-            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>Wallet Manager</p>
+            <p className="text-base font-semibold tracking-wide uppercase mb-2 text-foreground" style={{ letterSpacing: '0.08em' }}>{t('wallet.walletManager')}</p>
             <div className="flex items-center gap-3 mt-1">
               <p className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg text-foreground" style={{ letterSpacing: '-0.03em', textShadow: '0 2px 16px hsla(var(--primary),0.12)' }}>{formatCurrency(balance)}</p>
             </div>
@@ -247,7 +247,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
               variant="default"
               onClick={() => setManagerOpen(true)}
             >
-              Wallet Manager
+              {t('wallet.walletManager')}
             </Button>
           </div>
         </CardContent>
@@ -297,7 +297,7 @@ const Wallet = ({ onNavigate }: WalletProps) => {
           className={`h-20 flex-col gap-2 rounded-xl shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/60 ${selectedTab === 'transactions' ? 'bg-primary text-white' : 'bg-transparent border border-primary text-primary'}`}
         >
           <ArrowUpRight className="h-6 w-6" />
-          <span>Transactions</span>
+          <span>{t('wallet.transactions')}</span>
         </Button>
         <Button
           onClick={() => setSelectedTab('add-money')}
