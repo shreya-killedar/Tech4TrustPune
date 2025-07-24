@@ -103,6 +103,7 @@ const Transactions = () => {
               </DialogHeader>
             </DialogContent>
           </Dialog>
+
           ))}
         </tbody>
       </table>
