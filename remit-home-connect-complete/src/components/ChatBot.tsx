@@ -42,7 +42,6 @@ const ChatBot = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<number | null>(null);
-
   // Show FAQ button if FAQ question is selected
   const showFAQButton =
     selectedQuestion !== null &&

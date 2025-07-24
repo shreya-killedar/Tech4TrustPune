@@ -26,7 +26,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-
 function getAuthUser() {
   try {
     return JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -85,7 +84,7 @@ const Savings = () => {
 
   const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
   const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
-  const overallProgress = (totalSaved / totalTarget) * 100;
+  const overallProgress = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
   const formatCurrency = (value: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency: userCurrency }).format(value);
 
   function updateGoals(newGoals: any[]) {
@@ -132,7 +131,7 @@ const Savings = () => {
         }
         toast({
           title: 'Money Saved!',
-          description: `$${amt} added to your savings goal "${selectedGoal.name}"`,
+          description: `${formatCurrency(amt)} added to your savings goal "${selectedGoal.name}"`,
         });
         setDepositAmount('');
         setShowAddMoney(false);
@@ -281,7 +280,7 @@ const Savings = () => {
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">{t('savings.monthlyNeeded')}</p>
                         <p className="font-bold text-warning">
-                          {formatCurrency(Math.ceil((goal.targetAmount - goal.currentAmount) / (timeLeft / 30)))}
+                          {timeLeft > 0 ? formatCurrency(Math.ceil((goal.targetAmount - goal.currentAmount) / (timeLeft / 30))) : '-'}
                         </p>
                       </div>
                     </div>
@@ -318,7 +317,7 @@ const Savings = () => {
                   className="rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                 />
                 <div className="text-sm text-muted-foreground mt-1">
-                  {t('wallet.availableBalance')}: ${userBalance.toLocaleString()}
+                  {t('wallet.availableBalance')}: {formatCurrency(userBalance)}
                 </div>
               </div>
 
@@ -332,8 +331,7 @@ const Savings = () => {
                       onClick={() => setDepositAmount(amount.toString())}
                       className="h-16 flex-col rounded-lg border-primary/30 shadow-sm focus:ring-2 focus:ring-primary/60"
                     >
-                      <DollarSign className="h-5 w-5 mb-1" />
-                      ${amount}
+                      {formatCurrency(amount)}
                     </Button>
                   ))}
                 </div>
@@ -360,8 +358,8 @@ const Savings = () => {
                       {/* Show preview of after-save amount if this goal is selected and amount is entered */}
                       {selectedGoal && selectedGoal.id === goal.id && depositAmount && parseFloat(depositAmount) > 0 && (
                         <div className="mt-2 text-sm">
-                          <span>Current: ${goal.currentAmount.toLocaleString()} &rarr; </span>
-                          <span className="font-bold text-primary">After Save: ${(goal.currentAmount + parseFloat(depositAmount)).toLocaleString()}</span>
+                          <span>Current: {formatCurrency(goal.currentAmount)} &rarr; </span>
+                          <span className="font-bold text-primary">After Save: {formatCurrency(goal.currentAmount + parseFloat(depositAmount))}</span>
                         </div>
                       )}
                     </div>
@@ -529,9 +527,8 @@ const Savings = () => {
                 </DialogHeader>
               </DialogContent>
             </Dialog>
-    </div>
 
-    
+    </div>
   );
 };
 
