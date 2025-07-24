@@ -104,7 +104,7 @@ const Savings = () => {
 
       {/* Overview Card */}
       <Card
-        className="rounded-2xl shadow-xl border border-border relative mb-8"
+        className="rounded-2xl shadow-xl border border-primary/60 relative mb-8"
         style={{
           background: 'linear-gradient(135deg, rgba(120,132,255,0.12) 0%, rgba(0,212,255,0.10) 100%)',
           boxShadow: '0 4px 24px 0 rgba(80,80,120,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)',
@@ -131,9 +131,9 @@ const Savings = () => {
               <span>Overall Progress</span>
               <span>{Math.round(overallProgress)}%</span>
             </div>
-            <div className="w-full bg-white/20 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div 
-                className="bg-white h-2 rounded-full transition-all"
+                className="bg-primary h-2 rounded-full transition-all"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>

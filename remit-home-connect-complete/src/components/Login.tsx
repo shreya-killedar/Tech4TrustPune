@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+interface LoginProps {
+  switchToRegister?: () => void;
+}
+
+const Login = ({ switchToRegister }: LoginProps) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +23,7 @@ const Login = () => {
       return;
     }
     localStorage.setItem('auth_user', JSON.stringify(user));
-    navigate('/');
+    navigate('/dashboard');
   };
 
   return (
@@ -29,7 +33,7 @@ const Login = () => {
         <input
           type="email"
           placeholder={t('onboarding.email')}
-          className="w-full border px-3 py-2 text-black placeholder-black bg-card"
+          className="w-full border px-3 py-2 text-foreground placeholder:text-muted-foreground bg-card"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -37,7 +41,7 @@ const Login = () => {
         <input
           type="password"
           placeholder={t('onboarding.password')}
-          className="w-full border px-3 py-2 text-black placeholder-black bg-card"
+          className="w-full border px-3 py-2 text-foreground placeholder:text-muted-foreground bg-card"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -51,7 +55,7 @@ const Login = () => {
         <span>{t('onboarding.register')}? </span>
         <button
           className="text-blue-600 hover:underline"
-          onClick={() => navigate('/register')}
+          onClick={switchToRegister ? switchToRegister : () => navigate('/register')}
         >
           {t('onboarding.register')}
         </button>
