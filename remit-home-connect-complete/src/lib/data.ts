@@ -121,7 +121,7 @@ export const recentTransactions: Transaction[] = [
 export const savingsGoals: SavingsGoal[] = [
   {
     id: '1',
-    name: 'savings.emergencyFundName',
+    name: "savings.emergencyFundName",
     targetAmount: 5000,
     currentAmount: 2450,
     currency: 'USD',
@@ -130,7 +130,7 @@ export const savingsGoals: SavingsGoal[] = [
   },
   {
     id: '2',
-    name: 'savings.familyHouseName',
+    name: "savings.familyHouseName",
     targetAmount: 20000,
     currentAmount: 8500,
     currency: 'USD',
@@ -139,7 +139,7 @@ export const savingsGoals: SavingsGoal[] = [
   },
   {
     id: '3',
-    name: 'savings.childrenEducationName',
+    name: "savings.childrenEducationName",
     targetAmount: 10000,
     currentAmount: 3200,
     currency: 'USD',

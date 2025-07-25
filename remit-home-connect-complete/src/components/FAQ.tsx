@@ -18,7 +18,7 @@ export default function FAQ() {
       <div className="flex items-center gap-3 mb-2">
         <HelpCircle className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold text-foreground">FAQ</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('faq.heading')}</h1>
           <p className="text-muted-foreground text-sm">{t('faq.title')}</p>
         </div>
       </div>
