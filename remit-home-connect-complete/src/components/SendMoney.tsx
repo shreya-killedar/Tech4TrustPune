@@ -463,10 +463,10 @@ const SendMoney = () => {
                   <div className="flex items-center gap-3">
                     <PiggyBank className="h-6 w-6 text-primary" />
                     <div className="flex-1">
-                      <p className="font-medium">{goal.name} (Savings Fund)</p>
-                      <p className="text-sm text-muted-foreground">Available: {userCurrency} {goal.currentAmount.toLocaleString()}</p>
+                      <p className="font-medium">{t(goal.name)} ({t('sendMoney.savingsFund')})</p>
+                      <p className="text-sm text-muted-foreground">{t('sendMoney.available')}: {userCurrency} {goal.currentAmount.toLocaleString()}</p>
                     </div>
-                    <Badge variant="secondary">Instant</Badge>
+                    <Badge variant="secondary">{t('sendMoney.instant')}</Badge>
                   </div>
                 </div>
               ))}

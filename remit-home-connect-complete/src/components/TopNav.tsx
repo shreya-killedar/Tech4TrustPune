@@ -104,7 +104,7 @@ const TopNav = () => {
           { id: 'wallet', label: t('dashboard.wallet'), path: '/dashboard/wallet' },
           { id: 'savings', label: t('dashboard.savings'), path: '/dashboard/savings' },
           { id: 'insurance', label: t('dashboard.insurance'), path: '/dashboard/insurance' },
-          { id: 'faq', label: 'FAQ', path: '/dashboard/faq' },
+          { id: 'faq', label: t('dashboard.faq'), path: '/dashboard/faq' },
         ].map((item) => (
           <Button
             key={item.id}

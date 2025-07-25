@@ -145,7 +145,7 @@ const ChatBot = () => {
               {selectedQuestion === null ? (
                 <div className="w-full">
                   <div className="text-center text-blue-900 dark:text-blue-100 text-lg font-semibold mb-4">
-                    How can we help you?
+                    {t('chatbot.howCanWeHelp')}
                   </div>
                   <ul className="space-y-3">
                     {QUESTIONS.map((q, idx) => (
@@ -167,13 +167,13 @@ const ChatBot = () => {
                       className="text-blue-600 dark:text-blue-300 underline text-sm"
                       onClick={() => setSelectedQuestion(null)}
                     >
-                      Back
+                      {t('chatbot.back')}
                     </button>
                     <button
                       className="text-blue-600 dark:text-blue-300 underline text-sm"
                       onClick={() => setSelectedQuestion(null)}
                     >
-                      Reset
+                      {t('chatbot.reset')}
                     </button>
                   </div>
                   <div className="text-blue-900 dark:text-blue-100 text-lg font-semibold mb-6 text-center">
@@ -188,7 +188,7 @@ const ChatBot = () => {
                         navigate('/dashboard/faq');
                       }}
                     >
-                      View FAQ
+                      {t('chatbot.viewFAQ')}
                     </button>
                   ) : QUESTIONS[selectedQuestion].isMail ? (
                     <a

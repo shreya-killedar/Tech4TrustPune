@@ -16,6 +16,7 @@ const resources = {
         logout: 'Logout',
       },
       dashboard: {
+        faq: 'FAQ',
         totalBalance: 'Total Balance',
         sendMoney: 'Send Money',
         addMoney: 'Add Money',
@@ -107,6 +108,7 @@ const resources = {
         recipientCountry: 'Recipient Country'
       },
       faq: {
+        heading: 'FAQ',
         title: 'Frequently Asked Questions',
         q1: 'How can I transfer money?',
         a1: 'You can use the Send Money option from your dashboard.',
@@ -133,9 +135,13 @@ const resources = {
       },
       chatbot: {
         title: 'AI ChatBot',
+        howCanWeHelp: 'How can we help you?',
         placeholder: 'Type here...',
         send: 'Send',
         greeting: 'Hi! How can I help you today?',
+        back: 'Back',
+        reset: 'Reset',
+        viewFAQ: 'View FAQ',
       },
       chatbotQuestions: {
         q1: 'How do I send money?',
@@ -312,6 +318,7 @@ const resources = {
         in: 'in',
         moneySentSuccess: 'Money Sent Successfully!',
         sendMoney: 'Send Money',
+        savingsFund: 'Savings Fund',
       },
       settings: {
         title: 'Settings',
@@ -409,6 +416,7 @@ const resources = {
         logout: 'लॉगआउट',
       },
       dashboard: {
+        faq: 'सामान्य प्रश्न',
         totalBalance: 'कुल शेष',
         sendMoney: 'पैसे भेजें',
         addMoney: 'पैसे जोड़ें',
@@ -500,6 +508,7 @@ const resources = {
         recipientCountry: 'प्राप्तकर्ता देश',
       },
       faq: {
+        heading: 'सामान्य प्रश्न',
         title: 'अक्सर पूछे जाने वाले प्रश्न',
         q1: 'How can I transfer money?',
         a1: 'You can use the Send Money option from your dashboard.',
@@ -525,10 +534,14 @@ const resources = {
         a6: 'किसी भी सवाल या सहायता के लिए आप हमें support@cashbridge.com पर संपर्क कर सकते हैं।'
       },
       chatbot: {
-        title: 'AI ChatBot',
-        placeholder: 'Type here...',
-        send: 'Send',
-        greeting: 'Hi! How can I help you today?',
+        title: 'एआई चैटबोट',
+        howCanWeHelp: 'हम आपकी कैसे मदद कर सकते हैं?',
+        placeholder: 'यहाँ लिखें...',
+        send: 'भेजें',
+        greeting: 'नमस्ते! मैं आज आपकी कैसे मदद कर सकता हूँ?',
+        back: 'वापस',
+        reset: 'रीसेट',
+        viewFAQ: 'सामान्य प्रश्न देखें',
       },
       chatbotQuestions: {
         q1: 'मैं पैसे कैसे भेजूं?',
@@ -704,7 +717,8 @@ const resources = {
         sentTo: 'को भेजा गया',
         in: 'में',
         moneySentSuccess: 'पैसे सफलतापूर्वक भेजे गए!',
-        sendMoney: 'Geld senden',
+        sendMoney: 'पैसे भेजें',
+        savingsFund: 'बचत निधि',
       },
       settings: {
         title: 'सेटिंग्स',
@@ -802,6 +816,7 @@ const resources = {
         logout: 'Abmelden',
       },
       dashboard: {
+        faq: 'FAQ',
         totalBalance: 'Gesamtguthaben',
         sendMoney: 'Geld senden',
         addMoney: 'Geld hinzufügen',
@@ -919,7 +934,8 @@ const resources = {
       },
       chatbot: {
         title: 'AI ChatBot',
-        placeholder: 'Type here...',
+        howCanWeHelp: 'Wie können wir Ihnen helfen?',
+        placeholder: 'Hier eingeben...',
         send: 'Send',
         greeting: 'Hi! How can I help you today?',
       },
@@ -1098,6 +1114,7 @@ const resources = {
         in: 'in',
         moneySentSuccess: 'Money Sent Successfully!',
         sendMoney: 'Geld senden',
+        savingsFund: 'Sparfonds',
       },
       settings: {
         title: 'Settings',
